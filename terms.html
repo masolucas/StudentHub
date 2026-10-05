@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Folio · Terms</title>
+  <meta name="theme-color" content="#0C2340">
+  <link rel="icon" href="images/folio-mark.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="css/folio.css">
+  <script type="module" src="js/pages/terms.js"></script>
+</head>
+<body>
+
+  <header class="navbar" id="navbar"></header>
+
+  <div class="auth-loading" id="loading">
+    <span class="spinner" aria-hidden="true"></span>
+    <span>Loading…</span>
+  </div>
+
+  <main class="page" id="page" hidden>
+    <div class="page-header">
+      <div>
+        <p class="eyebrow">Academic</p>
+        <h1>Terms</h1>
+        <p class="page-sub">Only one term can be active. It is the default for everyone.</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn--primary" id="newTermBtn" type="button">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          <span>New term</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="alert alert--error" id="pageError" role="alert" hidden><div id="pageErrorText"></div></div>
+
+    <div class="table-wrap" id="termsTableWrap" hidden>
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Term</th>
+            <th scope="col">Dates</th>
+            <th scope="col">Status</th>
+            <th scope="col">Classes</th>
+            <th scope="col"><span class="visually-hidden">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody id="termsBody"></tbody>
+      </table>
+    </div>
+
+    <div class="empty-state" id="emptyTerms" hidden>
+      <h2>No terms yet</h2>
+      <p>Create the first term, then teachers can add classes to it.</p>
+    </div>
+  </main>
+
+  <!-- ============ New / edit term ============ -->
+  <div class="modal-overlay" id="termOverlay" hidden>
+    <form class="modal" id="termForm" role="dialog" aria-modal="true" aria-labelledby="termFormTitle" novalidate>
+      <div class="modal-head">
+        <h2 id="termFormTitle">New term</h2>
+        <button class="icon-btn" type="button" data-close aria-label="Close"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </div>
+      <div class="field">
+        <label for="termName">Name</label>
+        <input type="text" id="termName" maxlength="60" placeholder="e.g. Winter 2027" autofocus>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="termStart">First day</label>
+          <input type="date" id="termStart">
+        </div>
+        <div class="field">
+          <label for="termEnd">Last day</label>
+          <input type="date" id="termEnd">
+        </div>
+      </div>
+      <p class="field-help" id="termDatesHelp" hidden>This term has classes. Changing its dates moves every class's weeks to the new dates. Week content is kept.</p>
+      <div class="field" id="termStatusField">
+        <label for="termStatus">Status</label>
+        <select id="termStatus">
+          <option value="upcoming">Upcoming — teachers can set up classes</option>
+          <option value="active">Active — the current term</option>
+        </select>
+      </div>
+      <div class="alert alert--error" id="termFormError" role="alert" hidden><div id="termFormErrorText"></div></div>
+      <div class="modal-actions">
+        <button class="btn btn--secondary" type="button" data-close>Cancel</button>
+        <button class="btn btn--primary" type="submit" id="termFormSubmit">Save</button>
+      </div>
+    </form>
+  </div>
+
+</body>
+</html>

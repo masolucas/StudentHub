@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Folio · Class</title>
+  <meta name="theme-color" content="#0C2340">
+  <link rel="icon" href="images/folio-mark.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Folio">
+  <link rel="stylesheet" href="css/folio.css">
+  <script type="module" src="js/pages/class.js"></script>
+</head>
+<body>
+
+  <header class="navbar" id="navbar"></header>
+
+  <div class="auth-loading" id="loading">
+    <span class="spinner" aria-hidden="true"></span>
+    <span>Loading…</span>
+  </div>
+
+  <main class="page page--narrow" id="notFound" hidden>
+    <div class="card">
+      <h1>Class not found</h1>
+      <p class="text-muted" id="notFoundText">This class is not available, or you are not in it.</p>
+      <a class="btn btn--primary" href="dashboard.html">Back to my classes</a>
+    </div>
+  </main>
+
+  <div id="classPage" hidden>
+    <!-- ============ Header (navy, gold corner brackets) ============ -->
+    <header class="class-hero">
+      <div class="class-hero-inner">
+        <a class="class-hero-back" href="dashboard.html">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+          My classes
+        </a>
+        <p class="class-hero-eyebrow" id="heroEyebrow" hidden></p>
+        <h1 id="heroTitle"></h1>
+        <p class="class-hero-sub" id="heroSubtitle" hidden></p>
+        <dl class="class-hero-meta" id="heroMeta"></dl>
+        <div class="class-hero-actions">
+          <a class="btn btn--gold" id="syllabusBtn" target="_blank" rel="noopener" hidden>
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 2h9l5 5v15H6z"/><path d="M15 2v5h5"/></svg>
+            <span>Syllabus</span>
+          </a>
+          <button class="btn btn--on-navy" id="editClassBtn" type="button" hidden>
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>
+            <span>Edit class</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- ============ Tabs ============ -->
+    <div class="tabs-bar">
+      <div class="tabs" role="tablist" aria-label="Class sections" id="tabs"></div>
+    </div>
+
+    <main class="page page--class">
+      <div class="alert alert--info" id="closedNotice" hidden>
+        <div><b>This term is closed.</b>You can still look at everything, but you can't hand in work.</div>
+      </div>
+
+      <section class="tab-panel" id="panel-weeks" role="tabpanel" aria-labelledby="tab-weeks"></section>
+      <section class="tab-panel" id="panel-library" role="tabpanel" aria-labelledby="tab-library" hidden>
+        <div class="empty-state"><h2>Library</h2><p>Coming in build step 6.</p></div>
+      </section>
+      <section class="tab-panel" id="panel-work" role="tabpanel" aria-labelledby="tab-work" hidden>
+        <div class="empty-state"><h2 id="workTitle">Assignments</h2><p>Coming in build step 7.</p></div>
+      </section>
+      <section class="tab-panel" id="panel-students" role="tabpanel" aria-labelledby="tab-students" hidden>
+        <div class="empty-state"><h2>Students &amp; Grades</h2><p>Coming in build step 8.</p></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ============ Edit class (teachers) ============ -->
+  <div class="modal-overlay" id="classOverlay" hidden>
+    <form class="modal modal--wide" id="classForm" role="dialog" aria-modal="true" aria-labelledby="classFormTitle" novalidate>
+      <div class="modal-head">
+        <h2 id="classFormTitle">Edit class</h2>
+        <button class="icon-btn" type="button" data-close aria-label="Close"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </div>
+      <div class="field">
+        <label for="editName">Class name</label>
+        <input type="text" id="editName" maxlength="120" required>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="editEyebrow">Program <span class="text-muted">(optional)</span></label>
+          <input type="text" id="editEyebrow" maxlength="80" placeholder="e.g. Global Access Credential Program">
+        </div>
+        <div class="field">
+          <label for="editLevel">Level <span class="text-muted">(optional)</span></label>
+          <input type="text" id="editLevel" maxlength="40" placeholder="e.g. B2 → C1">
+        </div>
+      </div>
+      <div class="field">
+        <label for="editSubtitle">Subtitle <span class="text-muted">(optional)</span></label>
+        <textarea id="editSubtitle" rows="2" maxlength="400"></textarea>
+      </div>
+      <div class="field">
+        <label for="editSyllabus">Syllabus link <span class="text-muted">(optional, https://…)</span></label>
+        <input type="url" id="editSyllabus" placeholder="https://drive.google.com/…">
+      </div>
+      <div class="field-row field-row--3">
+        <div class="field">
+          <label for="editDay">Day</label>
+          <select id="editDay"></select>
+        </div>
+        <div class="field">
+          <label for="editStart">Starts</label>
+          <select id="editStart"></select>
+        </div>
+        <div class="field">
+          <label for="editEnd">Ends</label>
+          <select id="editEnd"></select>
+        </div>
+      </div>
+      <p class="field-help" id="scheduleWarning" hidden>Changing the day or start time moves every week's date, and scheduled weeks will open at the new class time.</p>
+      <fieldset class="field">
+        <legend>Color</legend>
+        <div class="swatches" id="editColors"></div>
+      </fieldset>
+      <label class="check-row">
+        <input type="checkbox" id="editLibrary">
+        <span>Has a library</span>
+      </label>
+      <label class="check-row">
+        <input type="checkbox" id="editAutoUnlock">
+        <span>New weeks open at class time automatically</span>
+      </label>
+      <div class="alert alert--error" id="classFormError" role="alert" hidden><div id="classFormErrorText"></div></div>
+      <div class="modal-actions">
+        <button class="btn btn--secondary" type="button" data-close>Cancel</button>
+        <button class="btn btn--primary" type="submit" id="classFormSubmit">Save</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ============ Edit week (teachers) ============ -->
+  <div class="modal-overlay" id="weekOverlay" hidden>
+    <form class="modal" id="weekForm" role="dialog" aria-modal="true" aria-labelledby="weekFormTitle" novalidate>
+      <div class="modal-head">
+        <div>
+          <h2 id="weekFormTitle">Edit week</h2>
+          <p class="modal-sub" id="weekFormDate"></p>
+        </div>
+        <button class="icon-btn" type="button" data-close aria-label="Close"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </div>
+      <label class="check-row">
+        <input type="checkbox" id="weekHoliday">
+        <span>Holiday — no class this week</span>
+      </label>
+      <p class="field-help field-help--warn" id="weekHolidayWarning" hidden>This week has materials or assignments. Students won't see them while it's a holiday. Nothing is deleted.</p>
+      <div class="field">
+        <label for="weekTitle">Title</label>
+        <input type="text" id="weekTitle" maxlength="160" placeholder="e.g. Finding Your Thesis">
+      </div>
+      <div class="field">
+        <label for="weekTopic">Topic</label>
+        <textarea id="weekTopic" rows="2" maxlength="600" placeholder="One or two sentences students can read before class."></textarea>
+      </div>
+      <div class="field">
+        <label for="weekAssessment">Assessment <span class="text-muted">(optional)</span></label>
+        <input type="text" id="weekAssessment" maxlength="160" placeholder="e.g. Midterm: Comparative Analysis Essay">
+      </div>
+      <fieldset class="field" id="weekTagsField">
+        <legend>Tags</legend>
+        <div class="tag-checks" id="weekTags"></div>
+      </fieldset>
+      <div class="alert alert--error" id="weekFormError" role="alert" hidden><div id="weekFormErrorText"></div></div>
+      <div class="modal-actions">
+        <button class="btn btn--secondary" type="button" data-close>Cancel</button>
+        <button class="btn btn--primary" type="submit" id="weekFormSubmit">Save</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ============ Week access: lock / schedule / open, early access (teachers) ============ -->
+  <div class="modal-overlay" id="accessOverlay" hidden>
+    <form class="modal" id="accessForm" role="dialog" aria-modal="true" aria-labelledby="accessFormTitle" novalidate>
+      <div class="modal-head">
+        <div>
+          <h2 id="accessFormTitle">Who can see this week?</h2>
+          <p class="modal-sub" id="accessFormWeek"></p>
+        </div>
+        <button class="icon-btn" type="button" data-close aria-label="Close"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </div>
+      <fieldset class="field">
+        <legend>Everyone in the class</legend>
+        <label class="radio-row"><input type="radio" name="accessState" value="locked"><span><b>Locked</b> — students see the title only</span></label>
+        <label class="radio-row"><input type="radio" name="accessState" value="scheduled"><span><b>Opens at a set time</b></span></label>
+        <div class="field radio-indent" id="accessAtField">
+          <label for="accessAt" class="visually-hidden">Opens at</label>
+          <input type="datetime-local" id="accessAt" step="900">
+          <span class="field-help" id="accessTzHelp"></span>
+        </div>
+        <label class="radio-row"><input type="radio" name="accessState" value="unlocked"><span><b>Open now</b></span></label>
+      </fieldset>
+      <fieldset class="field">
+        <legend>Open early for these students</legend>
+        <p class="field-help">For a student who will miss class.</p>
+        <div class="student-checks" id="accessStudents"></div>
+      </fieldset>
+      <div class="alert alert--error" id="accessFormError" role="alert" hidden><div id="accessFormErrorText"></div></div>
+      <div class="modal-actions">
+        <button class="btn btn--secondary" type="button" data-close>Cancel</button>
+        <button class="btn btn--primary" type="submit" id="accessFormSubmit">Save</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ============ Add / edit material (teachers) ============ -->
+  <div class="modal-overlay" id="materialOverlay" hidden>
+    <form class="modal" id="materialForm" role="dialog" aria-modal="true" aria-labelledby="materialFormTitle" novalidate>
+      <div class="modal-head">
+        <div>
+          <h2 id="materialFormTitle">Add material</h2>
+          <p class="modal-sub" id="materialFormWeek"></p>
+        </div>
+        <button class="icon-btn" type="button" data-close aria-label="Close"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </div>
+      <fieldset class="field">
+        <legend>Kind</legend>
+        <div class="segmented">
+          <label><input type="radio" name="materialKind" value="link"><span>Link</span></label>
+          <label><input type="radio" name="materialKind" value="text"><span>Text</span></label>
+          <label class="segmented-disabled" title="Coming with file uploads (build step 7)"><input type="radio" name="materialKind" value="file" disabled><span>File</span></label>
+        </div>
+      </fieldset>
+      <div class="field">
+        <label for="materialTitle">Title</label>
+        <input type="text" id="materialTitle" maxlength="200" placeholder="e.g. Slide Presentation">
+      </div>
+      <div id="materialLinkFields">
+        <div class="field">
+          <label for="materialUrl">Link</label>
+          <input type="url" id="materialUrl" placeholder="https://docs.google.com/…">
+          <span class="field-help" id="materialCopyHelp" hidden>Students get their own copy of this document.</span>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="materialType">Type</label>
+            <select id="materialType"></select>
+          </div>
+          <div class="field">
+            <label for="materialOpenMode">Opens</label>
+            <select id="materialOpenMode">
+              <option value="new_tab">In a new tab</option>
+              <option value="embed">Inside Folio</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="field" id="materialTextFields" hidden>
+        <label for="materialBody">Text</label>
+        <textarea id="materialBody" rows="5" maxlength="20000"></textarea>
+      </div>
+      <label class="check-row">
+        <input type="checkbox" id="materialHidden">
+        <span>Hidden from students <span class="text-muted">(draft)</span></span>
+      </label>
+      <div class="alert alert--error" id="materialFormError" role="alert" hidden><div id="materialFormErrorText"></div></div>
+      <div class="modal-actions">
+        <button class="btn btn--secondary" type="button" data-close>Cancel</button>
+        <button class="btn btn--primary" type="submit" id="materialFormSubmit">Save</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ============ Sections (teachers) ============ -->
+  <div class="modal-overlay" id="sectionsOverlay" hidden>
+    <div class="modal modal--wide" role="dialog" aria-modal="true" aria-labelledby="sectionsTitle">
+      <div class="modal-head">
+        <div>
+          <h2 id="sectionsTitle">Sections</h2>
+          <p class="modal-sub">Optional groups of weeks, like "Part 1 — Writing Foundations".</p>
+        </div>
+        <button class="icon-btn" type="button" data-close aria-label="Close"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </div>
+      <ul class="manage-list" id="sectionsList"></ul>
+      <form class="manage-form" id="sectionForm" novalidate>
+        <h3 id="sectionFormTitle">Add a section</h3>
+        <div class="field">
+          <label for="sectionTitle">Title</label>
+          <input type="text" id="sectionTitle" maxlength="160" placeholder="e.g. Writing Foundations">
+        </div>
+        <div class="field">
+          <label for="sectionDescription">Description <span class="text-muted">(optional)</span></label>
+          <textarea id="sectionDescription" rows="2" maxlength="1000"></textarea>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="sectionFrom">From week</label>
+            <select id="sectionFrom"></select>
+          </div>
+          <div class="field">
+            <label for="sectionTo">To week</label>
+            <select id="sectionTo"></select>
+          </div>
+        </div>
+        <div class="alert alert--error" id="sectionFormError" role="alert" hidden><div id="sectionFormErrorText"></div></div>
+        <div class="modal-actions">
+          <button class="btn btn--secondary" type="button" id="sectionFormCancel" hidden>Cancel edit</button>
+          <button class="btn btn--primary" type="submit" id="sectionFormSubmit">Add section</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ Tags (teachers) ============ -->
+  <div class="modal-overlay" id="tagsOverlay" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="tagsTitle">
+      <div class="modal-head">
+        <div>
+          <h2 id="tagsTitle">Tags</h2>
+          <p class="modal-sub">Colored labels you can add to weeks.</p>
+        </div>
+        <button class="icon-btn" type="button" data-close aria-label="Close"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </div>
+      <ul class="manage-list" id="tagsList"></ul>
+      <form class="manage-form" id="tagForm" novalidate>
+        <h3>Add a tag</h3>
+        <div class="field">
+          <label for="tagLabel">Label</label>
+          <input type="text" id="tagLabel" maxlength="40" placeholder="e.g. Research">
+        </div>
+        <fieldset class="field">
+          <legend>Color</legend>
+          <div class="swatches" id="tagColors"></div>
+        </fieldset>
+        <div class="alert alert--error" id="tagFormError" role="alert" hidden><div id="tagFormErrorText"></div></div>
+        <div class="modal-actions">
+          <button class="btn btn--primary" type="submit">Add tag</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ Embedded material viewer ============ -->
+  <div class="viewer" id="viewerOverlay" hidden>
+    <div class="viewer-inner" role="dialog" aria-modal="true" aria-labelledby="viewerTitle">
+      <div class="viewer-bar">
+        <h2 class="viewer-title" id="viewerTitle"></h2>
+        <a class="btn btn--gold btn--sm" id="viewerFull" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 4h6v6M20 4l-8 8M10 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-5"/></svg>
+          <span>Open full screen</span>
+        </a>
+        <button class="icon-btn icon-btn--on-navy" type="button" data-close aria-label="Close"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </div>
+      <iframe class="viewer-frame" id="viewerFrame" title="Material" allow="fullscreen; clipboard-write"
+              sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-presentation"></iframe>
+    </div>
+  </div>
+
+</body>
+</html>

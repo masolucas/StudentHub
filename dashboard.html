@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Folio · My classes</title>
+  <meta name="theme-color" content="#0C2340">
+  <link rel="icon" href="images/folio-mark.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Folio">
+  <link rel="stylesheet" href="css/folio.css">
+  <script type="module" src="js/pages/dashboard.js"></script>
+</head>
+<body>
+
+  <header class="navbar" id="navbar"></header>
+
+  <div class="auth-loading" id="loading">
+    <span class="spinner" aria-hidden="true"></span>
+    <span>Loading…</span>
+  </div>
+
+  <main class="page" id="page" hidden>
+    <div class="page-header">
+      <div>
+        <p class="eyebrow" id="termEyebrow"></p>
+        <h1>My <em>classes</em></h1>
+      </div>
+      <div class="header-actions">
+        <label class="term-select" id="termSelectWrap" hidden>
+          <span class="visually-hidden">Term</span>
+          <select id="termSelect"></select>
+        </label>
+        <button class="btn btn--primary" id="newClassBtn" type="button" hidden>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          <span>New class</span>
+        </button>
+        <button class="btn btn--gold" id="joinBtn" type="button" hidden>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          <span>Join a class</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="alert alert--error" id="pageError" role="alert" hidden>
+      <div><b>Something went wrong.</b><span id="pageErrorText"></span></div>
+    </div>
+
+    <div class="alert alert--info" id="noTerms" hidden>
+      <div><b>No terms yet.</b><span id="noTermsText"></span></div>
+    </div>
+
+    <section class="calendar" id="calendar" aria-label="Weekly schedule" hidden></section>
+
+    <!-- Teacher, no classes in this term -->
+    <div class="empty-state" id="emptyTeacher" hidden>
+      <svg class="empty-state-icon" viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/></svg>
+      <h2>Create your first class</h2>
+      <p>Your classes appear here as a weekly calendar.</p>
+      <button class="btn btn--primary btn--lg" id="emptyNewClassBtn" type="button">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        <span>New class</span>
+      </button>
+    </div>
+
+    <!-- Student, no classes -->
+    <div class="empty-state" id="emptyStudent" hidden>
+      <svg class="empty-state-icon" viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 9l9-5 9 5-9 5z"/><path d="M7 11.5V16c0 1.5 2.2 3 5 3s5-1.5 5-3v-4.5"/></svg>
+      <h2>Join your class</h2>
+      <p>Your teacher will give you a code.</p>
+      <button class="btn btn--gold btn--lg btn--wide" id="emptyJoinBtn" type="button">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        <span>Join a class</span>
+      </button>
+    </div>
+  </main>
+
+  <!-- ============ Create class (side panel; the calendar shows a preview) ============ -->
+  <div class="modal-overlay modal-overlay--side" id="createOverlay" hidden>
+    <form class="modal modal--side" id="createForm" role="dialog" aria-modal="true" aria-labelledby="createTitle" novalidate>
+      <div class="modal-head">
+        <h2 id="createTitle">New class</h2>
+        <button class="icon-btn" type="button" data-close aria-label="Close">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+
+      <div class="field">
+        <label for="className">Class name</label>
+        <input type="text" id="className" maxlength="120" autocomplete="off" placeholder="e.g. Expository Writing with AI" autofocus>
+      </div>
+
+      <div class="field">
+        <label for="classTerm">Term</label>
+        <select id="classTerm"></select>
+      </div>
+
+      <div class="field">
+        <label for="classDay">Day</label>
+        <select id="classDay"></select>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="classStart">Starts</label>
+          <select id="classStart"></select>
+        </div>
+        <div class="field">
+          <label for="classEnd">Ends</label>
+          <select id="classEnd"></select>
+        </div>
+      </div>
+
+      <fieldset class="field">
+        <legend>Color</legend>
+        <div class="swatches" id="classColors"></div>
+      </fieldset>
+
+      <label class="check-row">
+        <input type="checkbox" id="classLibrary">
+        <span>Has a library <span class="text-muted">(books for each week)</span></span>
+      </label>
+
+      <p class="ghost-summary" id="ghostSummary" aria-live="polite"></p>
+
+      <div class="alert alert--error" id="createError" role="alert" hidden>
+        <div id="createErrorText"></div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn--secondary" type="button" data-close>Cancel</button>
+        <button class="btn btn--primary" type="submit" id="createSubmit">Create class</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ============ Show code (also the day-one projector screen) ============ -->
+  <div class="code-view" id="codeOverlay" hidden>
+    <div class="code-view-inner" role="dialog" aria-modal="true" aria-labelledby="codeClassName" tabindex="-1">
+      <button class="icon-btn icon-btn--on-navy code-view-close" type="button" data-close aria-label="Close">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+      <h2 class="code-view-class" id="codeClassName"></h2>
+      <div class="code-view-body">
+        <div>
+          <p class="code-view-label">Class code</p>
+          <p class="code-view-code" id="codeValue"></p>
+          <p class="code-view-hint">Open Folio → <strong>Join a class</strong></p>
+        </div>
+        <div class="code-view-qr" id="codeQr"></div>
+      </div>
+      <p class="code-view-link mono" id="codeLink"></p>
+      <div class="code-view-actions">
+        <button class="btn btn--on-navy" type="button" id="copyCodeBtn">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="1.5"/><path d="M5 15V5a1 1 0 0 1 1-1h10"/></svg>
+          <span>Copy code</span>
+        </button>
+        <button class="btn btn--on-navy" type="button" id="copyLinkBtn">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1"/></svg>
+          <span>Copy link</span>
+        </button>
+        <button class="btn btn--on-navy" type="button" id="newCodeBtn">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>
+          <span>New code</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ Join a class (students) ============ -->
+  <div class="modal-overlay" id="joinOverlay" hidden>
+    <form class="modal" id="joinForm" role="dialog" aria-modal="true" aria-labelledby="joinTitle" novalidate>
+      <div class="modal-head">
+        <h2 id="joinTitle">Join a class</h2>
+        <button class="icon-btn" type="button" data-close aria-label="Close">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+
+      <label class="join-label" for="joinCode">Type the class code</label>
+      <input class="code-input" type="text" id="joinCode" maxlength="9" autocomplete="off"
+             autocapitalize="characters" autocorrect="off" spellcheck="false" placeholder="K7M2QX" autofocus>
+
+      <div class="alert alert--error join-error" id="joinError" role="alert" hidden>
+        <div id="joinErrorText"></div>
+      </div>
+
+      <button class="btn btn--gold btn--lg btn--block join-submit" type="submit" id="joinSubmit">Join</button>
+
+      <p class="divider-or"><span>or</span></p>
+
+      <button class="btn btn--secondary btn--lg btn--block" type="button" id="scanBtn">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M7 12h10"/></svg>
+        <span id="scanBtnLabel">Scan the QR code</span>
+      </button>
+
+      <div class="scanner" id="scanner" hidden>
+        <video id="scanVideo" playsinline muted></video>
+        <span class="corner corner-tl" aria-hidden="true"></span>
+        <span class="corner corner-tr" aria-hidden="true"></span>
+        <span class="corner corner-bl" aria-hidden="true"></span>
+        <span class="corner corner-br" aria-hidden="true"></span>
+        <p class="scanner-hint">Point the camera at the QR code</p>
+      </div>
+    </form>
+  </div>
+
+</body>
+</html>
