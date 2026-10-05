@@ -8,6 +8,9 @@ import { DAYS, toMinutes, toTimeString, formatTime, formatRange, timeOptions } f
 import { isHttpsUrl } from '../material-types.js';
 import { swatchesHtml, checkSwatch, checkedSwatch } from '../palette.js';
 import { createWeeksTab } from '../weeks.js';
+import { createLibraryTab } from '../library.js';
+import { createAssignmentsTab } from '../assignments.js';
+import { createGradebookTab } from '../gradebook.js';
 
 registerServiceWorker();
 
@@ -28,9 +31,25 @@ const ctx = {
   unlocks: new Map(),     // week id → Set of student ids (students only see their own)
   roster: [],             // teachers only: [{ id, name }]
   currentWeekId: null,
+  books: [],
+  bookLinks: new Map(),   // book id → reading URL (only for books open to the caller)
+  assignments: [],
+  work: new Map(),        // students: assignment id → their gradebook row (status, score…)
+  selectTab: null,        // set below; lets tabs switch to each other
+  openBook: null,         // set by the Library tab; used by the Weeks tab chips
+  assignmentsTab: null,   // its actions are also used inside weeks
 };
 
 let weeksTab = null;
+let libraryTab = null;
+let gradebookTab = null;  // teachers only
+
+function renderTabsContent() {
+  weeksTab.render();
+  libraryTab.render();
+  ctx.assignmentsTab.render();
+  gradebookTab?.render();
+}
 
 const TAB_ICONS = {
   weeks: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
@@ -65,7 +84,7 @@ async function loadClass() {
 }
 
 async function loadWeeksData() {
-  const [weeks, sections, tags, weekTags, materials, unlocks, currentWeekId, roster] = await Promise.all([
+  const [weeks, sections, tags, weekTags, materials, unlocks, currentWeekId, roster, books, bookLinks, assignments, work] = await Promise.all([
     query(db.from('weeks')
       .select('id, number, session_date, title, topic, assessment_label, is_holiday, lock_state, unlock_at, section_id')
       .eq('class_id', classId).order('session_date')),
@@ -73,7 +92,7 @@ async function loadWeeksData() {
     query(db.from('class_tags').select('id, label, color, sort_order').eq('class_id', classId).order('sort_order').order('label')),
     query(db.from('week_tags').select('week_id, tag_id').eq('class_id', classId)),
     query(db.from('materials')
-      .select('id, week_id, title, kind, doc_type, url, body, open_mode, hidden, sort_order')
+      .select('id, week_id, title, kind, doc_type, url, body, file_key, file_name, size_bytes, mime_type, open_mode, hidden, sort_order')
       .eq('class_id', classId).order('sort_order').order('created_at')),
     query(db.from('week_unlocks').select('week_id, student_id').eq('class_id', classId)),
     query(db.rpc('current_week_id', { p_class: classId })),
@@ -82,7 +101,27 @@ async function loadWeeksData() {
         .select('student_id, profiles!enrollments_student_id_fkey(full_name, preferred_name, email)')
         .eq('class_id', classId).is('removed_at', null))
       : Promise.resolve([]),
+    query(db.from('books')
+      .select('id, week_id, title, author, cover_url, cover_key, open_mode, hidden, sort_order')
+      .eq('class_id', classId)),
+    // RLS returns only the links the caller may open.
+    query(db.from('book_links').select('book_id, reading_url, books!inner(class_id)').eq('books.class_id', classId)),
+    query(db.from('assignments')
+      .select('id, week_id, title, instructions, accepts, max_files, points, due_at, allow_late, is_assessment, hidden, sort_order')
+      .eq('class_id', classId)),
+    // Students: their own row per assignment (RLS limits the view to them).
+    ctx.isTeacher
+      ? Promise.resolve([])
+      : query(db.from('gradebook')
+        .select('assignment_id, status, is_late, score, submission_id, submitted_at')
+        .eq('class_id', classId)
+        .eq('student_id', ctx.user.id)),
   ]);
+
+  ctx.assignments = assignments;
+  ctx.work = new Map(work.map((r) => [r.assignment_id, r]));
+  ctx.books = books;
+  ctx.bookLinks = new Map(bookLinks.map((l) => [l.book_id, l.reading_url]));
 
   ctx.weeks = weeks;
   ctx.sections = sections;
@@ -118,8 +157,10 @@ async function reloadWeeks() {
   } catch (err) {
     showToast(errorMessage(err), 'error');
   }
-  weeksTab.render();
+  renderTabsContent();
   renderHeader();
+  // Assignments may have changed: refresh the grade table's data too.
+  await gradebookTab?.refresh();
 }
 
 // ============================================================
@@ -192,7 +233,6 @@ function renderTabs() {
             aria-controls="panel-${t.key}" aria-selected="false" tabindex="-1">
       ${TAB_ICONS[t.key]}<span>${t.label}</span>
     </button>`).join('');
-  $('workTitle').textContent = ctx.isTeacher ? 'Assignments' : 'My Work';
   selectTab(active, false);
 }
 
@@ -308,7 +348,7 @@ async function submitClassForm(event) {
   }
   renderHeader();
   renderTabs();
-  weeksTab.render();
+  renderTabsContent();
 }
 
 $('editClassBtn').addEventListener('click', openClassForm);
@@ -345,10 +385,20 @@ async function start() {
   }
 
   if (ctx.isTeacher) fillClassFormOptions();
+  ctx.selectTab = (key) => {
+    if (document.getElementById(`tab-${key}`)) selectTab(key);
+  };
   weeksTab = createWeeksTab($('panel-weeks'), ctx, reloadWeeks);
+  libraryTab = createLibraryTab($('panel-library'), ctx, reloadWeeks);
+  ctx.openBook = libraryTab.openBook;
+  ctx.assignmentsTab = createAssignmentsTab($('panel-work'), ctx, reloadWeeks);
+  if (ctx.isTeacher) {
+    gradebookTab = createGradebookTab($('panel-students'), ctx);
+    gradebookTab.refresh();
+  }
   renderHeader();
   renderTabs();
-  weeksTab.render();
+  renderTabsContent();
 
   $('loading').hidden = true;
   $('classPage').hidden = false;

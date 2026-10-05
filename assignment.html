@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Folio · Assignment</title>
+  <meta name="theme-color" content="#0C2340">
+  <link rel="icon" href="images/folio-mark.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Folio">
+  <link rel="stylesheet" href="css/folio.css">
+  <script type="module" src="js/pages/assignment.js"></script>
+</head>
+<body>
+
+  <header class="navbar" id="navbar"></header>
+
+  <div class="auth-loading" id="loading">
+    <span class="spinner" aria-hidden="true"></span>
+    <span>Loading…</span>
+  </div>
+
+  <main class="page page--narrow" id="notFound" hidden>
+    <div class="card">
+      <h1 id="notFoundTitle">Assignment not found</h1>
+      <p class="text-muted" id="notFoundText">It may not be open yet, or you are not in this class.</p>
+      <a class="btn btn--primary" href="dashboard.html">Back to my classes</a>
+    </div>
+  </main>
+
+  <main class="page page--submit" id="page" hidden>
+    <a class="back-link" id="backLink" href="dashboard.html">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+      <span id="backLabel">Back</span>
+    </a>
+
+    <header class="submit-head">
+      <div class="submit-title-row">
+        <h1 id="title"></h1>
+        <span id="statusChip"></span>
+      </div>
+      <p class="submit-due" id="dueLine"></p>
+      <p class="submit-points" id="pointsLine"></p>
+    </header>
+
+    <div id="banner"></div>
+
+    <!-- Returned work: score and teacher comment -->
+    <section class="grade-card" id="gradeCard" hidden>
+      <p class="grade-label">Your grade</p>
+      <p class="grade-score" id="gradeScore"></p>
+      <p class="grade-comment" id="gradeComment" hidden></p>
+    </section>
+
+    <section class="submit-section" id="instructionsSection" hidden>
+      <h2 class="submit-section-head">Instructions</h2>
+      <div class="submit-instructions" id="instructions"></div>
+    </section>
+
+    <!-- Teachers see the assignment as students do; grading is in Students & Grades. -->
+    <div class="alert alert--info" id="teacherNote" hidden>
+      <div><b>This is what students see.</b>Student work and grading come in the Students &amp; Grades tab (build step 8).</div>
+    </div>
+
+    <section class="submit-section" id="answerSection" hidden>
+      <div class="submit-section-row">
+        <label class="submit-section-head" for="answer">Your answer</label>
+        <span class="save-state" id="saveState" aria-live="polite"></span>
+      </div>
+      <textarea class="answer-input" id="answer" rows="8" maxlength="20000" placeholder="Write your answer here."></textarea>
+    </section>
+
+    <section class="submit-section" id="filesSection" hidden>
+      <h2 class="submit-section-head">Photos and files <span class="files-count" id="filesCount"></span></h2>
+      <div class="file-tiles" id="fileTiles"></div>
+      <p class="field-help" id="filesEmpty" hidden>No files yet.</p>
+      <div class="file-buttons" id="fileButtons" hidden>
+        <label class="btn btn--secondary btn--lg file-pick" id="takePhotoBtn">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></svg>
+          <span>Take a photo</span>
+          <input type="file" id="cameraInput" accept="image/*" capture="environment">
+        </label>
+        <label class="btn btn--secondary btn--lg file-pick" id="chooseFileBtn">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 11.5l-8.5 8.5a5 5 0 0 1-7-7L14 4.5a3.3 3.3 0 0 1 4.7 4.7L10.2 17.7a1.7 1.7 0 0 1-2.4-2.4L15.5 7.6"/></svg>
+          <span>Choose a file</span>
+          <input type="file" id="fileInput" multiple>
+        </label>
+      </div>
+      <p class="field-help" id="filesHelp"></p>
+      <!-- Hidden picker used by "Replace" -->
+      <input type="file" id="replaceInput" class="visually-hidden" tabindex="-1" aria-hidden="true">
+    </section>
+
+    <div class="alert alert--error" id="submitError" role="alert" hidden><div id="submitErrorText"></div></div>
+
+    <div class="submit-actions" id="actions" hidden>
+      <button class="btn btn--gold btn--lg btn--block" type="button" id="turnInBtn" hidden>
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+        <span>Turn in</span>
+      </button>
+      <button class="btn btn--primary btn--lg btn--block" type="button" id="saveChangesBtn" hidden disabled>
+        <span>Save changes</span>
+      </button>
+      <p class="submit-help" id="actionHelp"></p>
+    </div>
+  </main>
+
+</body>
+</html>

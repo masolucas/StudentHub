@@ -6,8 +6,20 @@
 import { db } from './supabase.js';
 import { esc, errorMessage, showToast, openModal, closeModal } from './ui.js';
 import { formatDate, formatDateTime, toTimeString, toZonedInputValue, zonedInputToIso } from './time.js';
-import { DOC_TYPES, DOC_TYPE_LABELS, detectDocType, makesCopy, canEmbed, embedUrl, isHttpsUrl } from './material-types.js';
+import { DOC_TYPES, DOC_TYPE_LABELS, detectDocType, makesCopy, canEmbed, isHttpsUrl } from './material-types.js';
 import { swatchesHtml, checkSwatch, checkedSwatch, nextFreeColor } from './palette.js';
+import { openViewer } from './viewer.js';
+import { isOpenToClass, isOpenForStudent as studentCanSee } from './week-access.js';
+import { assignmentCardHtml } from './assignments.js';
+import { ACCEPT, DOCX, PPTX, uploadFile, deleteFile, hydrateFiles, openFileLink } from './files.js';
+
+// Database doc_type for an uploaded file.
+function docTypeOfFile(mimeType) {
+  if (mimeType === 'application/pdf') return 'pdf';
+  if (mimeType === DOCX) return 'docx';
+  if (mimeType === PPTX) return 'pptx';
+  return 'other';
+}
 
 const $ = (id) => document.getElementById(id);
 
@@ -31,6 +43,7 @@ const ICON = {
   layers: svg('<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/>', 16, 2),
   tag: svg('<path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.5"/>', 16, 2),
   frame: svg('<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/>', 14, 2),
+  book: svg('<path d="M4 5.5C4 4.7 4.7 4 5.5 4H12v16H5.5C4.7 20 4 19.3 4 18.5zM20 5.5c0-.8-.7-1.5-1.5-1.5H12v16h6.5c.8 0 1.5-.7 1.5-1.5z"/>', 17, 1.8),
 };
 
 const TYPE_OPTION_LABELS = {
@@ -48,7 +61,10 @@ export function createWeeksTab(container, ctx, reload) {
   const weekLabel = (w) => (w.is_holiday ? 'Holiday' : `Week ${w.number}`);
   const weekName = (w) => w.title || weekLabel(w);
   const materialsOf = (weekId) => ctx.materials.get(weekId) ?? [];
-  const hasContent = (w) => materialsOf(w.id).length > 0;
+  const assignmentsOf = (weekId) => ctx.assignments
+    .filter((a) => a.week_id === weekId)
+    .sort((a, b) => (a.due_at ?? '9999').localeCompare(b.due_at ?? '9999'));
+  const hasContent = (w) => materialsOf(w.id).length > 0 || assignmentsOf(w.id).length > 0;
 
   function findMaterial(id) {
     for (const list of ctx.materials.values()) {
@@ -58,14 +74,7 @@ export function createWeeksTab(container, ctx, reload) {
     return null;
   }
 
-  // What students see: computed here only for display. The database
-  // decides what content they actually receive.
-  function isOpenForStudent(w) {
-    if (w.is_holiday) return false;
-    if (w.lock_state === 'unlocked') return true;
-    if (w.lock_state === 'scheduled' && new Date(w.unlock_at) <= new Date()) return true;
-    return ctx.unlocks.get(w.id)?.has(ctx.user.id) ?? false;
-  }
+  const isOpenForStudent = (w) => studentCanSee(w, ctx);
 
   // ============================================================
   // RENDERING
@@ -74,6 +83,7 @@ export function createWeeksTab(container, ctx, reload) {
     if (firstRender && ctx.currentWeekId) expanded.add(ctx.currentWeekId);
     firstRender = false;
     container.innerHTML = (ctx.isTeacher ? toolbarHtml() : '') + `<div class="weeks">${groupsHtml()}</div>`;
+    hydrateFiles(container);
   }
 
   function toolbarHtml() {
@@ -133,7 +143,9 @@ export function createWeeksTab(container, ctx, reload) {
     let html = '';
     if (w.id === ctx.currentWeekId) html += '<span class="wbadge wbadge--current">Current week</span>';
     if (w.is_holiday) html += '<span class="wbadge wbadge--holiday">Holiday</span>';
-    if (w.assessment_label && !w.is_holiday) html += `<span class="wbadge wbadge--assess" title="${esc(w.assessment_label)}">Assessment</span>`;
+    // From the week's label, or from an assignment marked as an assessment.
+    const assessment = w.assessment_label || assignmentsOf(w.id).find((a) => a.is_assessment)?.title;
+    if (assessment && !w.is_holiday) html += `<span class="wbadge wbadge--assess" title="${esc(assessment)}">Assessment</span>`;
     for (const tagId of ctx.weekTags.get(w.id) ?? []) {
       const tag = ctx.tags.find((t) => t.id === tagId);
       if (tag) html += `<span class="wbadge wbadge--tag cls-${tag.color}">${esc(tag.label)}</span>`;
@@ -145,7 +157,7 @@ export function createWeeksTab(container, ctx, reload) {
   function accessChipHtml(w) {
     if (w.is_holiday) return '';
     let chip;
-    if (w.lock_state === 'unlocked' || (w.lock_state === 'scheduled' && new Date(w.unlock_at) <= new Date())) {
+    if (isOpenToClass(w)) {
       chip = `<span class="access-chip access-chip--open">${ICON.open}Open</span>`;
     } else if (w.lock_state === 'scheduled') {
       chip = `<span class="access-chip access-chip--scheduled">${ICON.clock}Opens ${esc(formatDateTime(w.unlock_at, tz()))}</span>`;
@@ -209,6 +221,7 @@ export function createWeeksTab(container, ctx, reload) {
           <button class="btn btn--secondary btn--sm" type="button" data-action="edit-week" data-week="${w.id}">${ICON.edit}<span>Edit week</span></button>
           <button class="btn btn--secondary btn--sm" type="button" data-action="access-week" data-week="${w.id}">${ICON.users}<span>Who can see it</span></button>
           <button class="btn btn--primary btn--sm" type="button" data-action="add-material" data-week="${w.id}">${ICON.plus}<span>Add material</span></button>
+          <button class="btn btn--primary btn--sm" type="button" data-action="add-assignment" data-week="${w.id}">${ICON.plus}<span>Add assignment</span></button>
         </div>`;
     }
     if (w.is_holiday) {
@@ -220,10 +233,26 @@ export function createWeeksTab(container, ctx, reload) {
       html += `<p class="week-assessment"><strong>Assessment:</strong> ${esc(w.assessment_label)}</p>`;
     }
 
+    // "This week's reading" chips (classes with a library).
+    if (ctx.cls.has_library && !w.is_holiday) {
+      const books = ctx.books.filter((b) => b.week_id === w.id);
+      if (books.length) {
+        html += `<div class="reading-chips">${books.map((b) => `
+          <button class="reading-chip" type="button" data-action="open-book" data-book="${b.id}">
+            ${ICON.book}<span>This week's reading: <strong>${esc(b.title)}</strong></span>
+          </button>`).join('')}</div>`;
+      }
+    }
+
+    const assignments = assignmentsOf(w.id);
+    if (assignments.length) {
+      html += `<div class="week-assignments">${assignments.map((a) => assignmentCardHtml(a, ctx)).join('')}</div>`;
+    }
+
     const materials = materialsOf(w.id);
     if (materials.length) {
       html += `<div class="materials">${materials.map((m, i) => materialHtml(m, i, materials.length)).join('')}</div>`;
-    } else if (!w.is_holiday) {
+    } else if (!w.is_holiday && !assignments.length) {
       html += `<p class="week-empty">${ctx.isTeacher
         ? 'No materials yet.'
         : 'Materials for this week haven’t been posted yet. Check back soon.'}</p>`;
@@ -242,6 +271,16 @@ export function createWeeksTab(container, ctx, reload) {
             <span class="material-body">${esc(m.body)}</span>
           </span>
         </div>`;
+    } else if (m.kind === 'file') {
+      // Uploaded file: the link is filled in by hydrateFiles() (short-lived B2 link).
+      main = `
+        <a class="material-main" href="#" data-file-key="${esc(m.file_key)}" target="_blank" rel="noopener">
+          <span class="material-icon">${ICON.doc}</span>
+          <span class="material-text">
+            <span class="material-name">${esc(m.title)}</span>
+            <span class="material-type">${esc(DOC_TYPE_LABELS[m.doc_type] ?? 'FILE')} · File</span>
+          </span>
+        </a>`;
     } else {
       const embedded = m.open_mode === 'embed' && canEmbed(m.url);
       const details = [DOC_TYPE_LABELS[m.doc_type] ?? 'LINK'];
@@ -287,20 +326,6 @@ export function createWeeksTab(container, ctx, reload) {
     row.querySelector('.week-head')?.setAttribute('aria-expanded', String(open));
     const body = row.querySelector('.week-body');
     if (body) body.hidden = !open;
-  }
-
-  // ============================================================
-  // EMBEDDED VIEWER
-  // ============================================================
-  function openViewer(materialId) {
-    const m = findMaterial(materialId);
-    if (!m) return;
-    $('viewerTitle').textContent = m.title;
-    $('viewerFull').href = m.url;
-    $('viewerFrame').src = embedUrl(m.url);
-    openModal($('viewerOverlay'), {
-      onClose: () => { $('viewerFrame').src = 'about:blank'; },
-    });
   }
 
   // ============================================================
@@ -473,6 +498,7 @@ export function createWeeksTab(container, ctx, reload) {
     const kind = materialKind();
     $('materialLinkFields').hidden = kind !== 'link';
     $('materialTextFields').hidden = kind !== 'text';
+    $('materialFileFields').hidden = kind !== 'file';
 
     const url = $('materialUrl').value.trim();
     if (!typeTouched && url) $('materialType').value = detectDocType(url);
@@ -499,6 +525,10 @@ export function createWeeksTab(container, ctx, reload) {
     $('materialType').value = m?.doc_type ?? 'other';
     $('materialOpenMode').value = m?.open_mode ?? 'new_tab';
     $('materialHidden').checked = m?.hidden ?? false;
+    $('materialFile').value = '';
+    $('materialCurrentFile').hidden = m?.kind !== 'file';
+    $('materialCurrentFile').textContent = m?.kind === 'file' ? `Current file: ${m.file_name}. Choose a new file to replace it.` : '';
+    $('materialUploadState').hidden = true;
     $('materialFormError').hidden = true;
     updateMaterialFields();
     openModal($('materialOverlay'));
@@ -512,22 +542,60 @@ export function createWeeksTab(container, ctx, reload) {
     const url = $('materialUrl').value.trim();
     const body = $('materialBody').value.trim();
 
+    const existingMaterial = editing.materialId ? findMaterial(editing.materialId) : null;
+    const file = $('materialFile').files[0] ?? null;
+    const keepsFile = existingMaterial?.kind === 'file';
+
     if (!title) return showFormError('materialForm', 'Please type a title.');
     if (kind === 'link' && !isHttpsUrl(url)) return showFormError('materialForm', 'The link must start with https://');
     if (kind === 'text' && !body) return showFormError('materialForm', 'Please type the text.');
+    if (kind === 'file' && !file && !keepsFile) return showFormError('materialForm', 'Choose a file to upload.');
+
+    const button = $('materialFormSubmit');
+    button.disabled = true;
+
+    // Upload first, so the row can point at the file.
+    let upload = null;
+    if (kind === 'file' && file) {
+      const progress = $('materialUploadState');
+      progress.hidden = false;
+      progress.textContent = 'Uploading… 0%';
+      try {
+        upload = await uploadFile({
+          purpose: 'material',
+          classId: ctx.cls.id,
+          file,
+          onProgress: (p) => { progress.textContent = `Uploading… ${Math.round(p * 100)}%`; },
+        });
+        progress.textContent = 'Uploaded ✓';
+      } catch (err) {
+        progress.hidden = true;
+        showFormError('materialForm', errorMessage(err));
+        button.disabled = false;
+        return;
+      }
+    }
+
+    const fileFields = kind === 'file'
+      ? {
+        file_key: upload?.key ?? existingMaterial.file_key,
+        file_name: upload?.fileName ?? existingMaterial.file_name,
+        size_bytes: upload?.size ?? existingMaterial.size_bytes,
+        mime_type: upload?.mimeType ?? existingMaterial.mime_type,
+      }
+      : { file_key: null, file_name: null, size_bytes: null, mime_type: null };
 
     const payload = {
       kind,
       title,
       url: kind === 'link' ? url : null,
       body: kind === 'text' ? body : null,
-      doc_type: kind === 'link' ? $('materialType').value : 'other',
+      doc_type: kind === 'link' ? $('materialType').value : kind === 'file' ? docTypeOfFile(fileFields.mime_type) : 'other',
       open_mode: kind === 'link' ? $('materialOpenMode').value : 'new_tab',
       hidden: $('materialHidden').checked,
+      ...fileFields,
     };
 
-    const button = $('materialFormSubmit');
-    button.disabled = true;
     try {
       if (editing.materialId) {
         await run(db.from('materials').update(payload).eq('id', editing.materialId));
@@ -537,10 +605,14 @@ export function createWeeksTab(container, ctx, reload) {
         await run(db.from('materials').insert({ ...payload, class_id: ctx.cls.id, week_id: editing.weekId, sort_order: nextOrder }));
       }
     } catch (err) {
+      if (upload) await deleteFile(upload.key);
       showFormError('materialForm', errorMessage(err));
       button.disabled = false;
       return;
     }
+
+    // The old file is no longer used: replaced, or the material changed kind.
+    if (keepsFile && (upload || kind !== 'file')) await deleteFile(existingMaterial.file_key);
 
     button.disabled = false;
     closeModal($('materialOverlay'));
@@ -577,8 +649,12 @@ export function createWeeksTab(container, ctx, reload) {
     const m = findMaterial(materialId);
     if (!window.confirm(`Delete "${m.title}"?`)) return;
     const { error } = await db.from('materials').delete().eq('id', materialId);
-    if (error) showToast(errorMessage(error), 'error');
-    else showToast('Material deleted.', 'success');
+    if (error) {
+      showToast(errorMessage(error), 'error');
+    } else {
+      if (m.kind === 'file') await deleteFile(m.file_key);
+      showToast('Material deleted.', 'success');
+    }
     await reload();
   }
 
@@ -790,13 +866,23 @@ export function createWeeksTab(container, ctx, reload) {
   // EVENTS
   // ============================================================
   container.addEventListener('click', (event) => {
+    if (event.target.closest('a[data-file-key]')) {
+      openFileLink(event);
+      return;
+    }
     const el = event.target.closest('[data-action]');
     if (!el || el.tagName === 'SELECT') return;
     const { action, week, material } = el.dataset;
 
     switch (action) {
       case 'toggle-week': toggleWeek(week); break;
-      case 'open-embed': event.preventDefault(); openViewer(material); break;
+      case 'open-embed': {
+        event.preventDefault();
+        const m = findMaterial(material);
+        if (m) openViewer(m.title, m.url);
+        break;
+      }
+      case 'open-book': ctx.openBook?.(el.dataset.book); break;
       case 'edit-week': openWeekForm(week); break;
       case 'access-week': openAccessForm(week); break;
       case 'add-material': openMaterialForm(week); break;
@@ -807,7 +893,9 @@ export function createWeeksTab(container, ctx, reload) {
       case 'schedule-all': scheduleAll(); break;
       case 'manage-sections': openSections(); break;
       case 'manage-tags': openTags(); break;
-      default: break;
+      default:
+        ctx.assignmentsTab?.handleAction(action, el.dataset.assignment, week);
+        break;
     }
   });
 
@@ -817,6 +905,7 @@ export function createWeeksTab(container, ctx, reload) {
 
   if (ctx.isTeacher) {
     $('materialType').innerHTML = DOC_TYPES.map((t) => `<option value="${t}">${TYPE_OPTION_LABELS[t]}</option>`).join('');
+    $('materialFile').accept = ACCEPT.material;
     $('tagColors').innerHTML = swatchesHtml('tagColor');
 
     $('weekForm').addEventListener('submit', submitWeekForm);

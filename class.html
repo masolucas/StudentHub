@@ -66,15 +66,9 @@
       </div>
 
       <section class="tab-panel" id="panel-weeks" role="tabpanel" aria-labelledby="tab-weeks"></section>
-      <section class="tab-panel" id="panel-library" role="tabpanel" aria-labelledby="tab-library" hidden>
-        <div class="empty-state"><h2>Library</h2><p>Coming in build step 6.</p></div>
-      </section>
-      <section class="tab-panel" id="panel-work" role="tabpanel" aria-labelledby="tab-work" hidden>
-        <div class="empty-state"><h2 id="workTitle">Assignments</h2><p>Coming in build step 7.</p></div>
-      </section>
-      <section class="tab-panel" id="panel-students" role="tabpanel" aria-labelledby="tab-students" hidden>
-        <div class="empty-state"><h2>Students &amp; Grades</h2><p>Coming in build step 8.</p></div>
-      </section>
+      <section class="tab-panel" id="panel-library" role="tabpanel" aria-labelledby="tab-library" hidden></section>
+      <section class="tab-panel" id="panel-work" role="tabpanel" aria-labelledby="tab-work" hidden></section>
+      <section class="tab-panel" id="panel-students" role="tabpanel" aria-labelledby="tab-students" hidden></section>
     </main>
   </div>
 
@@ -230,7 +224,7 @@
         <div class="segmented">
           <label><input type="radio" name="materialKind" value="link"><span>Link</span></label>
           <label><input type="radio" name="materialKind" value="text"><span>Text</span></label>
-          <label class="segmented-disabled" title="Coming with file uploads (build step 7)"><input type="radio" name="materialKind" value="file" disabled><span>File</span></label>
+          <label><input type="radio" name="materialKind" value="file"><span>File</span></label>
         </div>
       </fieldset>
       <div class="field">
@@ -260,6 +254,13 @@
       <div class="field" id="materialTextFields" hidden>
         <label for="materialBody">Text</label>
         <textarea id="materialBody" rows="5" maxlength="20000"></textarea>
+      </div>
+      <div class="field" id="materialFileFields" hidden>
+        <label for="materialFile">File</label>
+        <input type="file" id="materialFile">
+        <span class="field-help">PDF, Word, PowerPoint or an image. Up to 25 MB. Opens in a new tab.</span>
+        <span class="field-help" id="materialCurrentFile" hidden></span>
+        <span class="field-help" id="materialUploadState" aria-live="polite" hidden></span>
       </div>
       <label class="check-row">
         <input type="checkbox" id="materialHidden">
@@ -340,6 +341,193 @@
         </div>
       </form>
     </div>
+  </div>
+
+  <!-- ============ New / edit assignment (teachers) ============ -->
+  <div class="modal-overlay" id="assignmentOverlay" hidden>
+    <form class="modal modal--wide" id="assignmentForm" role="dialog" aria-modal="true" aria-labelledby="assignmentFormTitle" novalidate>
+      <div class="modal-head">
+        <h2 id="assignmentFormTitle">New assignment</h2>
+        <button class="icon-btn" type="button" data-close aria-label="Close"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </div>
+      <div class="field">
+        <label for="assignmentWeek">Week</label>
+        <select id="assignmentWeek"></select>
+        <span class="field-help">Students see the assignment when this week opens.</span>
+      </div>
+      <div class="field">
+        <label for="assignmentTitle">Title</label>
+        <input type="text" id="assignmentTitle" maxlength="200" placeholder="e.g. Thesis Paragraph" autofocus>
+      </div>
+      <div class="field">
+        <label for="assignmentInstructions">Instructions</label>
+        <textarea id="assignmentInstructions" rows="5" maxlength="20000" placeholder="Short and simple. Links become clickable."></textarea>
+      </div>
+      <fieldset class="field">
+        <legend>Students hand in</legend>
+        <div class="segmented">
+          <label><input type="radio" name="assignmentAccepts" value="text"><span>Text</span></label>
+          <label><input type="radio" name="assignmentAccepts" value="file"><span>Files</span></label>
+          <label><input type="radio" name="assignmentAccepts" value="both"><span>Text or files</span></label>
+        </div>
+      </fieldset>
+      <div class="field-row">
+        <div class="field" id="assignmentMaxFilesField">
+          <label for="assignmentMaxFiles">Most files</label>
+          <input type="number" id="assignmentMaxFiles" min="1" max="10" step="1">
+        </div>
+        <div class="field">
+          <label for="assignmentPoints">Points <span class="text-muted">(optional)</span></label>
+          <input type="number" id="assignmentPoints" min="0.5" step="0.5" placeholder="Empty = check mark">
+        </div>
+      </div>
+      <div class="field">
+        <label for="assignmentDue">Due</label>
+        <input type="datetime-local" id="assignmentDue" step="900">
+        <span class="field-help" id="assignmentTzHelp"></span>
+        <span class="field-help field-help--warn" id="assignmentDueWarning" hidden>The due date is before this week opens.</span>
+      </div>
+      <label class="check-row">
+        <input type="checkbox" id="assignmentLate">
+        <span>Accept late work <span class="text-muted">(marked as late)</span></span>
+      </label>
+      <label class="check-row">
+        <input type="checkbox" id="assignmentAssessment">
+        <span>This is an assessment</span>
+      </label>
+      <label class="check-row">
+        <input type="checkbox" id="assignmentHidden">
+        <span>Hidden from students <span class="text-muted">(draft)</span></span>
+      </label>
+      <div class="alert alert--error" id="assignmentFormError" role="alert" hidden><div id="assignmentFormErrorText"></div></div>
+      <div class="modal-actions">
+        <button class="btn btn--secondary" type="button" data-close>Cancel</button>
+        <button class="btn btn--primary" type="submit" id="assignmentFormSubmit">Save</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ============ Grading panel (teachers; docks on the right) ============ -->
+  <div class="modal-overlay modal-overlay--side" id="gradeOverlay" hidden>
+    <form class="modal modal--side grade-panel" id="gradeForm" role="dialog" aria-modal="true" aria-labelledby="gradeStudent" novalidate>
+      <div class="modal-head">
+        <div>
+          <p class="eyebrow" id="gradeAssignment"></p>
+          <h2 id="gradeStudent"></h2>
+        </div>
+        <button class="icon-btn" type="button" data-close aria-label="Close"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </div>
+
+      <div class="grade-nav">
+        <button class="btn btn--secondary btn--sm" type="button" id="gradePrev">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+          <span>Previous student</span>
+        </button>
+        <span class="grade-position" id="gradePosition"></span>
+        <button class="btn btn--secondary btn--sm" type="button" id="gradeNext">
+          <span>Next student</span>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+
+      <p class="grade-status" id="gradeStatus"></p>
+
+      <section class="grade-section" id="gradeAnswerSection">
+        <h3 class="submit-section-head">Answer</h3>
+        <div class="grade-answer" id="gradeAnswer"></div>
+      </section>
+
+      <section class="grade-section" id="gradeFilesSection">
+        <h3 class="submit-section-head">Photos and files</h3>
+        <div class="file-tiles file-tiles--small" id="gradeFiles"></div>
+      </section>
+
+      <section class="grade-section grade-form">
+        <h3 class="submit-section-head">Grade</h3>
+        <div class="field" id="gradeScoreField">
+          <label for="gradeScore">Score</label>
+          <div class="score-row">
+            <input type="number" id="gradeScore" min="0" step="0.5" inputmode="decimal">
+            <span class="score-out-of" id="gradeOutOf"></span>
+          </div>
+        </div>
+        <p class="field-help" id="gradeCheckNote">No points: saving shows a ✓ to the student.</p>
+        <div class="field">
+          <label for="gradeComment">Comment <span class="text-muted">(optional)</span></label>
+          <textarea id="gradeComment" rows="4" maxlength="10000"></textarea>
+        </div>
+        <p class="field-help" id="gradeVisibility"></p>
+        <div class="alert alert--error" id="gradeError" role="alert" hidden><div id="gradeErrorText"></div></div>
+        <div class="grade-actions">
+          <button class="btn btn--secondary" type="submit" id="gradeSave">Save</button>
+          <button class="btn btn--gold" type="button" id="gradeSaveReturn">Save and return</button>
+        </div>
+        <div class="grade-actions grade-actions--minor">
+          <button class="btn btn--ghost btn--sm" type="button" id="gradeReopen">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>
+            <span>Reopen for this student</span>
+          </button>
+          <button class="btn btn--ghost btn--sm btn--danger-text" type="button" id="gradeClear">Clear grade</button>
+        </div>
+      </section>
+    </form>
+  </div>
+
+  <!-- ============ Add / edit book (teachers) ============ -->
+  <div class="modal-overlay" id="bookOverlay" hidden>
+    <form class="modal" id="bookForm" role="dialog" aria-modal="true" aria-labelledby="bookFormTitle" novalidate>
+      <div class="modal-head">
+        <h2 id="bookFormTitle">Add book</h2>
+        <button class="icon-btn" type="button" data-close aria-label="Close"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </div>
+      <div class="field">
+        <label for="bookTitle">Title</label>
+        <input type="text" id="bookTitle" maxlength="200" placeholder="e.g. The Gift of the Magi" autofocus>
+      </div>
+      <div class="field">
+        <label for="bookAuthor">Author <span class="text-muted">(optional)</span></label>
+        <input type="text" id="bookAuthor" maxlength="120" placeholder="e.g. O. Henry">
+      </div>
+      <div class="field">
+        <label for="bookWeek">Week</label>
+        <select id="bookWeek"></select>
+        <span class="field-help">The book opens when this week opens.</span>
+      </div>
+      <div class="field">
+        <label for="bookUrl">Reading link</label>
+        <input type="url" id="bookUrl" placeholder="https://masolucas.github.io/…">
+      </div>
+      <div class="field">
+        <label for="bookOpenMode">Opens</label>
+        <select id="bookOpenMode">
+          <option value="new_tab">In a new tab</option>
+          <option value="embed">Inside Folio</option>
+        </select>
+      </div>
+      <fieldset class="field">
+        <legend>Cover <span class="text-muted">(optional)</span></legend>
+        <label class="field-sub" for="bookCoverFile">Upload an image</label>
+        <input type="file" id="bookCoverFile" accept="image/*">
+        <span class="field-help" id="bookCoverCurrent" hidden></span>
+        <label class="check-row check-row--compact" id="bookCoverRemoveRow" hidden>
+          <input type="checkbox" id="bookCoverRemove">
+          <span>Remove the uploaded cover</span>
+        </label>
+        <label class="field-sub" for="bookCover">…or paste an image link</label>
+        <input type="url" id="bookCover" placeholder="https://…/cover.jpg">
+        <span class="field-help">Without a cover, Folio shows a designed placeholder.</span>
+        <span class="field-help" id="bookUploadState" aria-live="polite" hidden></span>
+      </fieldset>
+      <label class="check-row">
+        <input type="checkbox" id="bookHidden">
+        <span>Hidden from students <span class="text-muted">(draft)</span></span>
+      </label>
+      <div class="alert alert--error" id="bookFormError" role="alert" hidden><div id="bookFormErrorText"></div></div>
+      <div class="modal-actions">
+        <button class="btn btn--secondary" type="button" data-close>Cancel</button>
+        <button class="btn btn--primary" type="submit" id="bookFormSubmit">Save</button>
+      </div>
+    </form>
   </div>
 
   <!-- ============ Embedded material viewer ============ -->

@@ -841,3 +841,304 @@ button.week-head:hover { background: var(--warm-l); }
 .chip--active { background: var(--green-s); color: var(--green-ink); }
 .chip--upcoming { background: var(--lt-gold); color: var(--gold-t); }
 .chip--closed { background: var(--line); color: var(--ink-s); }
+
+/* ============================================================
+   25. LIBRARY
+   Book cards with 2:3 covers. Without a cover (or if the image link
+   breaks) the designed placeholder shows: book icon, title, author.
+   ============================================================ */
+.toolbar-note { font-size: 0.88rem; color: var(--muted); }
+.book-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.5rem 1.3rem; }
+
+.book-card {
+  background: var(--paper); border-radius: 8px; border: 1px solid transparent; overflow: hidden;
+  box-shadow: 0 1px 2px rgba(12, 35, 64, 0.08); display: flex; flex-direction: column;
+}
+.book-card.is-current { border-color: var(--gold-b); }
+.book-card.is-locked { background: var(--lock-bg); }
+.book-card.is-hidden { opacity: 0.6; border: 1px dashed var(--lock-line); }
+
+.book-cover {
+  position: relative; display: block; aspect-ratio: 2 / 3; overflow: hidden;
+  background: var(--navy-d); color: var(--warm-w); text-decoration: none;
+}
+a.book-cover:hover .book-cover-img { transform: scale(1.03); }
+.book-cover-img {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;
+  transition: transform 0.2s ease;
+}
+.book-cover-img.is-broken { display: none; }
+.book-card.is-locked .book-cover-img { filter: grayscale(65%) brightness(0.8); }
+.book-cover-fallback {
+  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 1rem; gap: 0.4rem;
+  background: linear-gradient(160deg, var(--navy), var(--navy-d));
+}
+.book-cover-fallback svg { color: var(--gold); opacity: 0.85; margin-bottom: 0.3rem; }
+.book-cover-title { font-family: var(--serif); font-size: 1.05rem; line-height: 1.25; }
+.book-cover-author { font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.75; }
+.book-ribbon {
+  position: absolute; z-index: 2; top: 1.4rem; left: -2.1rem; transform: rotate(-40deg);
+  background: var(--gold-b); color: var(--navy); padding: 0.25rem 2.5rem;
+  font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+.book-cover .material-hidden-chip { z-index: 2; }
+
+.book-info { padding: 0.8rem 0.9rem 0.9rem; display: flex; flex-direction: column; gap: 0.2rem; flex: 1; }
+.book-week { font-family: var(--serif); font-style: italic; font-size: 0.85rem; color: var(--gold-t); }
+.book-title { font-size: 1.05rem; line-height: 1.25; }
+.book-author { font-size: 0.85rem; font-style: italic; color: var(--ink-s); }
+.book-card.is-locked .book-title, .book-card.is-locked .book-author { color: var(--lock-ink); }
+.book-status { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.8rem; font-weight: 700; color: var(--muted); margin-top: 0.3rem; }
+.book-status--open { color: var(--green-ink); }
+.book-note { font-size: 0.8rem; color: var(--amber); margin-top: 0.2rem; }
+.book-actions { margin-top: auto; padding: 0.4rem 0 0; }
+
+@media (max-width: 980px) { .book-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 720px) { .book-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; } }
+@media (max-width: 380px) { .book-grid { grid-template-columns: 1fr; } }
+
+/* "This week's reading" chip inside a week */
+.reading-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.9rem; }
+.reading-chip {
+  display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer;
+  font-family: var(--sans); font-size: 0.9rem; color: var(--navy); text-align: left;
+  background: var(--lt-gold); border: 1px solid transparent; border-radius: 999px; padding: 0.4rem 0.9rem;
+}
+.reading-chip svg { color: var(--gold-t); flex: none; }
+.reading-chip:hover { border-color: var(--gold-b); }
+
+/* ============================================================
+   26. ASSIGNMENTS AND STATUS CHIPS
+   Every status has a word and an icon, not only a color.
+   ============================================================ */
+.status-chip {
+  display: inline-flex; align-items: center; gap: 0.3rem; white-space: nowrap; flex: none;
+  font-size: 0.78rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 999px;
+  background: var(--lock-bg); color: var(--ink-s); border: 1px solid var(--line);
+}
+.status-chip--todo { background: var(--paper); }
+.status-chip--draft { background: var(--sky); color: var(--navy); border-color: transparent; }
+.status-chip--reopened { background: var(--navy); color: var(--warm-w); border-color: transparent; }
+.status-chip--overdue, .status-chip--late { background: var(--amber-s); color: var(--amber); border-color: transparent; }
+.status-chip--missing { background: var(--red-s); color: var(--red-d); border-color: transparent; }
+.status-chip--submitted { background: var(--lt-gold); color: var(--gold-t); border-color: transparent; }
+.status-chip--returned { background: var(--green-s); color: var(--green-ink); border-color: transparent; }
+
+.work-group { margin-bottom: 1.75rem; }
+.work-group-head {
+  display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.6rem;
+  font-family: var(--sans); font-size: 0.8rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold-t);
+}
+.work-count { background: var(--paper); border: 1px solid var(--line); color: var(--ink-s); border-radius: 999px; padding: 0 0.5rem; letter-spacing: 0; }
+
+.work-card {
+  display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 0.9rem; margin-bottom: 0.5rem;
+  background: var(--paper); border: 1px solid var(--line); border-left: 4px solid var(--navy-l); border-radius: 6px;
+  text-decoration: none; color: inherit;
+}
+a.work-card:hover { border-color: var(--gold-b); border-left-color: var(--gold-b); }
+.work-card.is-hidden { opacity: 0.6; border-style: dashed; }
+.work-icon { flex: none; color: var(--navy-l); display: inline-flex; }
+.work-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.1rem; }
+.work-title { font-weight: 700; color: var(--navy); font-size: 1rem; line-height: 1.3; }
+.work-title-btn { background: none; border: none; padding: 0; text-align: left; font-family: inherit; cursor: pointer; }
+.work-title-btn:hover { text-decoration: underline; }
+.work-meta { font-size: 0.85rem; color: var(--muted); }
+.work-flags { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.2rem; }
+.flag {
+  font-size: 0.68rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+  padding: 0.1rem 0.45rem; border-radius: 3px; background: var(--sky); color: var(--navy);
+}
+.flag--hidden { background: var(--lock-bg); color: var(--ink-s); border: 1px solid var(--line); }
+.flag--assess { background: var(--red-s); color: var(--red-d); }
+.work-actions { display: flex; gap: 0.1rem; flex: none; }
+.week-assignments { margin-bottom: 0.9rem; }
+.week-assignments .work-card { background: var(--warm-l); }
+
+@media (max-width: 560px) {
+  .work-card { flex-wrap: wrap; }
+  .work-card .status-chip { margin-left: calc(18px + 0.75rem); }
+  .work-actions { width: 100%; justify-content: flex-end; }
+}
+
+/* ============================================================
+   27. SUBMISSION PAGE (phone-first)
+   ============================================================ */
+.page--submit { max-width: 720px; padding-top: 1.5rem; }
+.back-link {
+  display: inline-flex; align-items: center; gap: 0.3rem; margin-bottom: 1rem;
+  font-size: 0.92rem; font-weight: 700; color: var(--navy-l); text-decoration: none;
+}
+.back-link:hover { color: var(--navy); text-decoration: underline; }
+.submit-head { margin-bottom: 1.25rem; }
+.submit-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; }
+.submit-title-row h1 { font-size: clamp(1.6rem, 5vw, 2.2rem); }
+.submit-due { font-weight: 700; color: var(--navy); margin-top: 0.4rem; }
+.submit-points { color: var(--muted); font-size: 0.92rem; }
+
+.submit-section { background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 1rem 1.1rem; margin-bottom: 1rem; }
+.submit-section-row { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+.submit-section-head {
+  display: block; font-family: var(--sans); font-size: 0.8rem; font-weight: 700; letter-spacing: 0.15em;
+  text-transform: uppercase; color: var(--gold-t); margin-bottom: 0.6rem;
+}
+.submit-instructions { white-space: pre-wrap; font-size: 1rem; color: var(--ink); overflow-wrap: anywhere; }
+
+.answer-input {
+  width: 100%; min-height: 180px; resize: vertical; font-family: var(--sans); font-size: 1.05rem; line-height: 1.5;
+  color: var(--ink); background: var(--sky); padding: 0.85rem; border: 1.5px solid var(--navy-s); border-radius: 6px;
+}
+.answer-input:focus { outline: none; border-color: var(--gold-b); background: var(--paper); box-shadow: var(--focus-ring); }
+.answer-input:disabled { background: var(--lock-bg); color: var(--ink-s); }
+.save-state { font-size: 0.85rem; color: var(--muted); }
+.save-state--ok { color: var(--green-ink); }
+.save-state--error { color: var(--red-d); }
+
+.submit-actions { margin-top: 1.25rem; }
+.submit-help { text-align: center; color: var(--muted); font-size: 0.92rem; margin-top: 0.6rem; }
+
+.grade-card {
+  background: var(--navy); color: var(--warm-w); border-top: 4px solid var(--gold); border-radius: 8px;
+  padding: 1.25rem 1.25rem 1.4rem; margin-bottom: 1rem; text-align: center;
+}
+.grade-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.25em; text-transform: uppercase; color: var(--navy-s); }
+.grade-score { font-family: var(--serif); font-size: 3rem; font-weight: 700; color: var(--gold-b); line-height: 1.1; margin-top: 0.25rem; }
+.grade-comment {
+  text-align: left; white-space: pre-wrap; margin-top: 1rem; padding: 0.85rem 1rem; border-radius: 6px;
+  background: rgba(239, 233, 217, 0.1); font-size: 1rem;
+}
+
+/* ============================================================
+   28. PHOTOS AND FILES (submission page)
+   ============================================================ */
+.files-count { color: var(--muted); letter-spacing: 0.05em; }
+.file-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 0.75rem; margin-bottom: 0.9rem; }
+.file-tiles:empty { display: none; }
+.file-tile { display: flex; flex-direction: column; background: var(--sky); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.file-thumb {
+  position: relative; display: flex; align-items: center; justify-content: center; aspect-ratio: 1;
+  background: var(--paper); text-decoration: none; color: var(--navy); overflow: hidden;
+}
+.file-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.file-thumb img.is-broken { display: none; }
+.file-doc { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; padding: 0.75rem; text-align: center; color: var(--navy-l); }
+.file-name { font-size: 0.8rem; color: var(--ink-s); overflow-wrap: anywhere; line-height: 1.25; }
+.file-tile-actions { display: flex; justify-content: space-between; padding: 0.15rem 0.2rem; }
+.file-tile.is-uploading { justify-content: center; aspect-ratio: 1; position: relative; }
+.file-progress { position: absolute; left: 0.6rem; right: 0.6rem; bottom: 0.6rem; height: 6px; background: var(--paper); border-radius: 999px; overflow: hidden; }
+.file-progress span {
+  display: block; height: 100%; width: var(--progress, 0%); border-radius: 999px;
+  background: linear-gradient(90deg, var(--gold), var(--gold-b)); transition: width 0.2s ease;
+}
+
+.file-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+.file-pick { position: relative; overflow: hidden; }
+.file-pick input { position: absolute; inset: 0; opacity: 0; cursor: pointer; font-size: 0; }
+.file-pick:focus-within { outline: 2px solid var(--gold-b); outline-offset: 2px; }
+.file-pick.is-disabled { opacity: 0.45; cursor: not-allowed; }
+.file-pick.is-disabled input { cursor: not-allowed; }
+
+@media (max-width: 420px) {
+  .file-buttons { grid-template-columns: 1fr; }
+}
+
+.field-sub { font-size: 0.85rem; font-weight: 600; color: var(--ink-s); margin-top: 0.35rem; }
+
+/* ============================================================
+   29. STUDENTS & GRADES
+   The student column is sticky; assignments scroll sideways.
+   Every status has a word or a mark besides its color.
+   ============================================================ */
+.btn--xs { min-height: 28px; padding: 0.2rem 0.6rem; font-size: 0.75rem; }
+.code-pill { background: var(--sky); color: var(--navy); font-weight: 700; letter-spacing: 0.12em; padding: 0.1rem 0.45rem; border-radius: 4px; }
+
+.grades-toolbar {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem;
+  margin-bottom: 1rem; padding: 0.75rem; background: var(--paper); border: 1px solid var(--line); border-radius: 8px;
+}
+.grades-summary { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1rem; color: var(--navy); }
+.grades-code { display: inline-flex; align-items: center; gap: 0.4rem; color: var(--ink-s); font-size: 0.92rem; }
+.grades-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; }
+.grades-removed-toggle { margin-bottom: 0; font-size: 0.9rem; }
+
+.grades-wrap { overflow: auto; max-height: 70vh; background: var(--paper); border: 1px solid var(--line); border-radius: 8px; }
+.grades { border-collapse: separate; border-spacing: 0; font-size: 0.88rem; min-width: 100%; }
+.grades th, .grades td { border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); padding: 0; }
+.grades thead th {
+  position: sticky; top: 0; z-index: 2; background: var(--navy); color: var(--warm-w);
+  vertical-align: bottom; text-align: left; font-weight: 700;
+}
+.grades tfoot th, .grades tfoot td { position: sticky; bottom: 0; z-index: 2; background: var(--sky); }
+
+.g-student {
+  position: sticky; left: 0; z-index: 1; background: var(--paper); min-width: 190px; max-width: 240px;
+  text-align: left; padding: 0.5rem 0.6rem !important;
+}
+.grades thead .g-student { z-index: 3; background: var(--navy); padding: 0.75rem 0.6rem !important; }
+.grades tfoot .g-student { z-index: 3; background: var(--sky); color: var(--navy); font-size: 0.8rem; }
+.grades tbody .g-student { display: flex; align-items: center; gap: 0.4rem; border-right: 2px solid var(--line); }
+.g-name { flex: 1; min-width: 0; font-weight: 700; color: var(--navy); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.g-row-btn { opacity: 0.45; }
+tr:hover .g-row-btn, .g-row-btn:focus-visible { opacity: 1; }
+tr.is-removed .g-name { color: var(--lock-ink); text-decoration: line-through; }
+tr.is-removed td { opacity: 0.55; }
+
+.g-col { min-width: 128px; max-width: 160px; }
+.g-head { display: flex; flex-direction: column; gap: 0.15rem; padding: 0.6rem; }
+.g-title { font-size: 0.85rem; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.g-meta { font-size: 0.72rem; font-weight: 400; color: var(--navy-s); }
+.g-head .btn { margin-top: 0.35rem; align-self: flex-start; }
+.g-col.is-locked { background: var(--navy-l); }
+.g-col.is-hidden .g-title { font-style: italic; }
+.g-sum { min-width: 80px; text-align: center; padding: 0.5rem !important; font-weight: 700; color: var(--navy); }
+.g-sum--missing { color: var(--red-d); }
+.g-foot { text-align: center; padding: 0.45rem !important; font-size: 0.8rem; font-weight: 700; color: var(--navy); }
+
+.g-cell { text-align: center; }
+.g-btn {
+  width: 100%; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 0.3rem;
+  background: transparent; border: none; cursor: pointer; font-family: var(--sans); font-size: 0.82rem; font-weight: 700;
+  color: inherit; padding: 0.35rem 0.4rem;
+}
+.g-btn:hover { box-shadow: inset 0 0 0 2px var(--gold-b); }
+.g-cell--not_due { color: var(--muted); }
+.g-cell--missing { background: var(--red-s); color: var(--red-d); }
+.g-cell--submitted { background: var(--lt-gold); color: var(--gold-t); }
+.g-cell--late { background: var(--amber-s); color: var(--amber); }
+.g-cell--graded { background: var(--sky); color: var(--navy); }
+.g-cell--returned { background: var(--green-s); color: var(--green-ink); }
+.g-cell--reopened { background: var(--navy-s); color: var(--navy); }
+.g-cell.is-locked { background-color: var(--lock-bg); }
+.g-score { font-size: 1rem; }
+.g-pending { font-size: 0.6rem; color: var(--gold-b); }
+.g-late { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--amber); }
+
+.grades-key { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; font-size: 0.8rem; }
+.g-key { padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700; }
+
+/* Grading panel */
+.grade-panel { display: flex; flex-direction: column; }
+.grade-nav { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.75rem; }
+.grade-position { font-size: 0.85rem; color: var(--muted); white-space: nowrap; }
+.grade-status { font-weight: 700; color: var(--navy); background: var(--sky); border-radius: 5px; padding: 0.5rem 0.7rem; margin-bottom: 1rem; }
+.grade-section { margin-bottom: 1.1rem; }
+.grade-answer {
+  white-space: pre-wrap; overflow-wrap: anywhere; max-height: 260px; overflow-y: auto;
+  background: var(--warm-l); border: 1px solid var(--line); border-radius: 6px; padding: 0.75rem; font-size: 0.95rem;
+}
+.grade-answer.is-empty { color: var(--muted); font-style: italic; }
+.file-tiles--small { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); }
+.grade-form { border-top: 1px solid var(--line); padding-top: 1rem; }
+.score-row { display: flex; align-items: center; gap: 0.5rem; }
+.score-row input { max-width: 110px; font-size: 1.2rem; font-weight: 700; }
+.score-out-of { font-size: 1.2rem; font-weight: 700; color: var(--muted); }
+.grade-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+.grade-actions .btn { flex: 1; }
+.grade-actions--minor .btn { flex: 0 1 auto; }
+
+@media (max-width: 560px) {
+  .g-student { min-width: 140px; }
+  .grade-nav .btn span { display: none; }
+}

@@ -76,6 +76,19 @@ export function formatDateTime(value, timeZone = SCHOOL_TIMEZONE) {
   return `${day} · ${time}`;
 }
 
+// Instant → "in 2 days", "in 3 hours", "yesterday", "5 minutes ago"
+export function relativeTime(value) {
+  const diff = new Date(value).getTime() - Date.now();
+  const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+  const minute = 60_000;
+  const hour = 60 * minute;
+  const day = 24 * hour;
+  const abs = Math.abs(diff);
+  if (abs < hour) return rtf.format(Math.round(diff / minute), 'minute');
+  if (abs < day) return rtf.format(Math.round(diff / hour), 'hour');
+  return rtf.format(Math.round(diff / day), 'day');
+}
+
 function zonedParts(date, timeZone) {
   const parts = new Intl.DateTimeFormat('en-US', {
     timeZone, year: 'numeric', month: '2-digit', day: '2-digit',
