@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Folio · Onboarding</title>
+  <meta name="theme-color" content="#0C2340">
+  <link rel="icon" href="images/folio-mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/folio.css">
+  <script type="module" src="js/pages/onboarding.js"></script>
+</head>
+<body class="onboard-page">
+  <!-- Day-one projector screen: QR to Folio, the class code, the 4 steps,
+       and a live counter with names as students join (Supabase Realtime). -->
+
+  <div class="auth-loading onboard-loading" id="loading">
+    <span class="spinner" aria-hidden="true"></span>
+    <span>Loading…</span>
+  </div>
+
+  <main class="page page--narrow" id="notAllowed" hidden>
+    <div class="card">
+      <h1>Onboarding mode</h1>
+      <p class="text-muted">This screen is for the class's teachers.</p>
+      <a class="btn btn--primary" href="dashboard.html">Back to my classes</a>
+    </div>
+  </main>
+
+  <div class="onboard" id="page" hidden>
+    <header class="onboard-top">
+      <div>
+        <p class="onboard-eyebrow">Welcome to</p>
+        <h1 class="onboard-class" id="className"></h1>
+      </div>
+      <div class="onboard-controls">
+        <label class="onboard-expected">
+          <span>Students expected</span>
+          <input type="number" id="expected" min="0" max="300" inputmode="numeric">
+        </label>
+        <button class="btn btn--on-navy btn--sm" type="button" id="fullscreenBtn">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+          <span>Full screen</span>
+        </button>
+        <a class="btn btn--on-navy btn--sm" id="exitBtn" href="dashboard.html">Exit</a>
+      </div>
+    </header>
+
+    <div class="onboard-main">
+      <section class="onboard-panel">
+        <p class="onboard-label"><span class="onboard-num">1</span>Scan to open Folio</p>
+        <div class="onboard-qr" id="portalQr"></div>
+        <p class="onboard-url mono" id="portalUrl"></p>
+      </section>
+
+      <section class="onboard-panel onboard-panel--code">
+        <p class="onboard-label"><span class="onboard-num">3</span>Class code</p>
+        <p class="onboard-code mono" id="code"></p>
+        <p class="onboard-hint">Tap <b>Join a class</b> and type this code</p>
+      </section>
+
+      <section class="onboard-panel onboard-panel--count">
+        <p class="onboard-label">Joined <span class="onboard-live" id="liveDot" title="Updates live">● Live</span></p>
+        <p class="onboard-count" aria-live="polite"><span id="joinedCount">0</span><span class="onboard-of" id="expectedText"></span></p>
+        <ul class="onboard-names" id="names"></ul>
+      </section>
+    </div>
+
+    <ol class="onboard-steps">
+      <li>
+        <span class="onboard-num">1</span>
+        <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>
+        <span><b>Install</b> Scan the QR. Add Folio to your Home Screen.</span>
+      </li>
+      <li>
+        <span class="onboard-num">2</span>
+        <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+        <span><b>Sign in</b> Open Folio. Use your school account.</span>
+      </li>
+      <li>
+        <span class="onboard-num">3</span>
+        <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 9l9-5 9 5-9 5z"/><path d="M7 11.5V16c0 1.5 2.2 3 5 3s5-1.5 5-3v-4.5"/></svg>
+        <span><b>Join</b> Type the class code.</span>
+      </li>
+      <li>
+        <span class="onboard-num">4</span>
+        <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 20a2 2 0 0 0 4 0"/></svg>
+        <span><b>Notifications</b> Tap Allow.</span>
+      </li>
+    </ol>
+  </div>
+</body>
+</html>

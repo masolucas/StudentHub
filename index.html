@@ -21,51 +21,120 @@
     <h1 class="entry-title">Folio</h1>
     <p class="entry-tagline">Your classes, all in one place.</p>
 
-    <!-- Signed in with a personal Gmail (rejected by the database) -->
-    <div class="alert alert--error" id="wrongAccount" role="alert" hidden>
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5v.01"/></svg>
-      <div><b>Please use your school account.</b>Sign in with your @approachisc.edu email.</div>
-    </div>
-
-    <!-- Any other sign-in problem -->
-    <div class="alert alert--error" id="signInError" role="alert" hidden>
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5v.01"/></svg>
-      <div><b>Sign-in did not work.</b>Please try again.</div>
-    </div>
-
-    <!-- Opened inside Instagram, WhatsApp, etc. Google blocks sign-in there. -->
-    <div class="alert alert--warning" id="inAppNotice" hidden>
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>
-      <div><b>Open this page in Safari or Chrome.</b>Sign-in does not work inside this app.</div>
-    </div>
-
-    <!-- Arrived from a class QR code -->
-    <div class="alert alert--info" id="joinNotice" hidden>
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 9l9-5 9 5-9 5z"/><path d="M7 11.5V16c0 1.5 2.2 3 5 3s5-1.5 5-3v-4.5"/></svg>
-      <div><b>Sign in to join your class.</b>You will join right after you sign in.</div>
-    </div>
-
     <div class="entry-loading" id="loading">
       <span class="spinner" aria-hidden="true"></span>
       <span>Loading…</span>
     </div>
 
-    <button class="btn btn--google btn--lg btn--block" id="signInBtn" type="button" hidden>
-      <svg viewBox="0 0 48 48" width="22" height="22" aria-hidden="true">
-        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-      </svg>
-      <span id="signInLabel">Sign in with Google</span>
-    </button>
+    <!-- ============ Phones: install first ============ -->
 
-    <p class="entry-hint">Use your <strong>@approachisc.edu</strong> account.</p>
+    <!-- iPhone / iPad in Safari -->
+    <section class="install" id="installIOS" hidden>
+      <h2 class="install-title">First, add Folio to your Home Screen</h2>
+      <ol class="install-steps">
+        <li>
+          <span class="install-num">1</span>
+          <span>Tap
+            <span class="install-icon" title="Share"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg></span>
+            <b>Share</b> at the bottom of Safari.</span>
+        </li>
+        <li>
+          <span class="install-num">2</span>
+          <span>Tap
+            <span class="install-icon" title="Add to Home Screen"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 8v8M8 12h8"/></svg></span>
+            <b>Add to Home Screen</b>. You may need to scroll down.</span>
+        </li>
+        <li>
+          <span class="install-num">3</span>
+          <span>Tap <b>Add</b>. Then open <b>Folio</b> from your Home Screen.</span>
+        </li>
+      </ol>
+    </section>
 
-    <p class="entry-note">
-      Google may show <span class="mono">bidcpfxiipkjwlmhptap.supabase.co</span>.
-      That is Folio's sign-in service.
-    </p>
+    <!-- Android -->
+    <section class="install" id="installAndroid" hidden>
+      <h2 class="install-title">First, install Folio</h2>
+      <button class="btn btn--gold btn--lg btn--block" id="installBtn" type="button" hidden>
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>
+        <span>Install Folio</span>
+      </button>
+      <ol class="install-steps" id="installAndroidSteps">
+        <li>
+          <span class="install-num">1</span>
+          <span>Tap
+            <span class="install-icon" title="Menu"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></span>
+            at the top of Chrome.</span>
+        </li>
+        <li><span class="install-num">2</span><span>Tap <b>Install app</b> or <b>Add to Home screen</b>.</span></li>
+        <li><span class="install-num">3</span><span>Open <b>Folio</b> from your Home Screen.</span></li>
+      </ol>
+    </section>
+
+    <!-- iPhone in Chrome / Firefox / Edge: only Safari can install -->
+    <section class="install" id="openInSafari" hidden>
+      <h2 class="install-title">Open this page in Safari</h2>
+      <p class="install-text">On iPhone, Folio installs from <b>Safari</b>. Copy the link, open Safari, and paste it.</p>
+      <button class="btn btn--gold btn--lg btn--block" type="button" data-copy-link>
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="1.5"/><path d="M5 15V5a1 1 0 0 1 1-1h10"/></svg>
+        <span>Copy the link</span>
+      </button>
+    </section>
+
+    <!-- Inside Instagram, WhatsApp, etc. -->
+    <section class="install" id="inAppNotice" hidden>
+      <h2 class="install-title">Open this page in Safari or Chrome</h2>
+      <p class="install-text">Sign-in does not work inside this app. Tap <b>⋯</b> and choose <b>Open in browser</b>, or copy the link.</p>
+      <button class="btn btn--gold btn--lg btn--block" type="button" data-copy-link>
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="1.5"/><path d="M5 15V5a1 1 0 0 1 1-1h10"/></svg>
+        <span>Copy the link</span>
+      </button>
+    </section>
+
+    <div class="alert alert--success" id="installedNotice" role="status" hidden>
+      <div><b>Folio is installed.</b>Open it from your Home Screen.</div>
+    </div>
+
+    <button class="link-btn" id="useBrowserBtn" type="button" hidden>Teacher, or using a computer? Continue in the browser</button>
+
+    <!-- ============ Sign in ============ -->
+    <div id="signInArea" hidden>
+      <!-- Signed in with a personal Gmail (rejected by the database) -->
+      <div class="alert alert--error" id="wrongAccount" role="alert" hidden>
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5v.01"/></svg>
+        <div><b>Please use your school account.</b>Sign in with your @approachisc.edu email.</div>
+      </div>
+
+      <!-- Any other sign-in problem -->
+      <div class="alert alert--error" id="signInError" role="alert" hidden>
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5v.01"/></svg>
+        <div><b>Sign-in did not work.</b>Please try again.</div>
+      </div>
+
+      <!-- Arrived from a class QR code -->
+      <div class="alert alert--info" id="joinNotice" hidden>
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 9l9-5 9 5-9 5z"/><path d="M7 11.5V16c0 1.5 2.2 3 5 3s5-1.5 5-3v-4.5"/></svg>
+        <div><b>Sign in to join your class.</b>You will join right after you sign in.</div>
+      </div>
+
+      <button class="btn btn--google btn--lg btn--block" id="signInBtn" type="button">
+        <svg viewBox="0 0 48 48" width="22" height="22" aria-hidden="true">
+          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+        </svg>
+        <span id="signInLabel">Sign in with Google</span>
+      </button>
+
+      <p class="entry-hint">Use your <strong>@approachisc.edu</strong> account.</p>
+
+      <p class="entry-note">
+        Google may show <span class="mono">bidcpfxiipkjwlmhptap.supabase.co</span>.
+        That is Folio's sign-in service.
+      </p>
+    </div>
+
+    <p class="entry-help"><a href="get-started.html">Need help? See how to get started</a></p>
   </main>
 
   <footer class="entry-footer">Folio by Approach</footer>

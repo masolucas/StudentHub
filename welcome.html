@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Folio · Welcome</title>
+  <meta name="theme-color" content="#0C2340">
+  <link rel="icon" href="images/folio-mark.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Folio">
+  <link rel="stylesheet" href="css/folio.css">
+  <script type="module" src="js/pages/welcome.js"></script>
+</head>
+<body class="entry-page">
+  <!-- First time a student signs in: name → join → notifications → done. -->
+  <main class="entry-card welcome-card">
+    <img class="entry-mark" src="images/folio-mark.svg" alt="" width="56" height="56">
+
+    <div class="entry-loading" id="loading">
+      <span class="spinner" aria-hidden="true"></span>
+      <span>Loading…</span>
+    </div>
+
+    <ol class="welcome-dots" id="dots" aria-label="Steps" hidden></ol>
+
+    <!-- 1. Name -->
+    <form class="welcome-step" id="stepName" novalidate hidden>
+      <h1 class="welcome-title">Welcome to Folio!</h1>
+      <label class="welcome-question" for="preferredName">What should your teacher call you?</label>
+      <input class="welcome-input" type="text" id="preferredName" maxlength="60" autocomplete="nickname" autocapitalize="words">
+      <p class="field-help">You can change it later.</p>
+      <div class="alert alert--error" id="nameError" role="alert" hidden><div id="nameErrorText"></div></div>
+      <button class="btn btn--gold btn--lg btn--block" type="submit" id="nameNext">Next</button>
+    </form>
+
+    <!-- 2. Join -->
+    <form class="welcome-step" id="stepJoin" novalidate hidden>
+      <h1 class="welcome-title">Join your class</h1>
+      <label class="welcome-question" for="joinCode">Type the class code</label>
+      <input class="code-input" type="text" id="joinCode" maxlength="9" autocomplete="off"
+             autocapitalize="characters" autocorrect="off" spellcheck="false" placeholder="K7M2QX">
+      <div class="alert alert--error join-error" id="joinError" role="alert" hidden><div id="joinErrorText"></div></div>
+      <button class="btn btn--gold btn--lg btn--block join-submit" type="submit" id="joinSubmit">Join</button>
+
+      <p class="divider-or"><span>or</span></p>
+
+      <button class="btn btn--secondary btn--lg btn--block" type="button" id="scanBtn">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M7 12h10"/></svg>
+        <span id="scanBtnLabel">Scan the QR code</span>
+      </button>
+      <div class="scanner" id="scanner" hidden>
+        <video id="scanVideo" playsinline muted></video>
+        <span class="corner corner-tl" aria-hidden="true"></span>
+        <span class="corner corner-tr" aria-hidden="true"></span>
+        <span class="corner corner-bl" aria-hidden="true"></span>
+        <span class="corner corner-br" aria-hidden="true"></span>
+        <p class="scanner-hint">Point the camera at the QR code</p>
+      </div>
+
+      <button class="link-btn" type="button" id="joinSkip">I don’t have a code yet</button>
+    </form>
+
+    <!-- 3. Notifications -->
+    <section class="welcome-step" id="stepNotify" hidden>
+      <h1 class="welcome-title">Turn on notifications?</h1>
+      <ul class="welcome-why">
+        <li>
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+          <span>A new week opens</span>
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          <span>Homework is due tomorrow</span>
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/></svg>
+          <span>Your teacher returns your work</span>
+        </li>
+      </ul>
+      <p class="field-help">Your phone will ask. Tap <b>Allow</b>.</p>
+      <div class="alert alert--warning" id="notifyDenied" role="status" hidden>
+        <div><b>Notifications are off.</b>That’s OK. You’ll still get emails.</div>
+      </div>
+      <button class="btn btn--gold btn--lg btn--block" type="button" id="notifyYes">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 20a2 2 0 0 0 4 0"/></svg>
+        <span>Turn on notifications</span>
+      </button>
+      <button class="link-btn" type="button" id="notifyNo">Not now</button>
+    </section>
+
+    <!-- 4. Done -->
+    <section class="welcome-step" id="stepDone" hidden>
+      <div class="welcome-check" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+      </div>
+      <h1 class="welcome-title">You’re all set!</h1>
+      <p class="welcome-text" id="doneText">Your classes are waiting.</p>
+      <button class="btn btn--gold btn--lg btn--block" type="button" id="doneBtn">Go to my classes</button>
+    </section>
+  </main>
+  <footer class="entry-footer">Folio by Approach</footer>
+</body>
+</html>

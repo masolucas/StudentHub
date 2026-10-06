@@ -1,4 +1,13 @@
 // Join codes: 6 characters with no look-alikes (no 0/O, 1/I/L).
+import { db } from './supabase.js';
+
+// Joins the active-term class with this code. Returns the class id.
+// (Students only; rejoining after being removed restores the old work.)
+export async function joinClass(code) {
+  const { data: classId, error } = await db.rpc('join_class', { p_code: code });
+  if (error) throw error;
+  return classId;
+}
 
 // A code from a QR link, kept while the student signs in.
 export const PENDING_JOIN_KEY = 'folio.pendingJoin';

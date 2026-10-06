@@ -40,6 +40,11 @@ async function start() {
 
   try {
     state.profile = await getProfile(state.user.id);
+    // First sign-in: students confirm their name, join, and set up notifications.
+    if (state.profile.role === 'student' && !state.profile.onboarded_at) {
+      window.location.replace(`welcome.html${window.location.search}`);
+      return;
+    }
     state.isTeacher = ['teacher', 'academic'].includes(state.profile.role);
     renderNavbar($('navbar'), state.profile, 'dashboard');
     $('newClassBtn').hidden = !state.isTeacher;
@@ -376,6 +381,7 @@ async function showCode(classId) {
 
   state.codeClassId = classId;
   $('codeClassName').textContent = state.classes.find((c) => c.id === classId)?.name ?? '';
+  $('onboardingLink').href = `onboarding.html?class=${encodeURIComponent(classId)}`;
   await renderCode(data.code);
   openModal($('codeOverlay'), { onClose: () => { state.codeClassId = null; } });
 }

@@ -209,6 +209,8 @@ function renderHeader() {
   $('syllabusBtn').hidden = !c.syllabus_url;
   if (c.syllabus_url) $('syllabusBtn').href = c.syllabus_url;
   $('editClassBtn').hidden = !ctx.isTeacher;
+  $('onboardingBtn').hidden = !ctx.isTeacher;
+  $('onboardingBtn').href = `onboarding.html?class=${encodeURIComponent(c.id)}`;
   $('closedNotice').hidden = ctx.isTeacher || c.terms?.status !== 'closed';
 }
 
