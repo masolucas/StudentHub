@@ -1163,6 +1163,11 @@ tr.is-removed td { opacity: 0.55; }
   width: 30px; height: 30px; border-radius: 6px; background: var(--paper); color: var(--blue); border: 1px solid var(--line);
 }
 
+.install-reminder { align-items: center; }
+.install-reminder > div { flex: 1; }
+.install-reminder a { color: inherit; font-weight: 700; }
+.install-reminder .icon-btn { color: inherit; }
+
 .link-btn {
   background: none; border: none; padding: 0.5rem; margin-top: 0.5rem; cursor: pointer;
   font-family: var(--sans); font-size: 0.92rem; color: var(--navy-l); text-decoration: underline;

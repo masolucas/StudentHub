@@ -14,6 +14,19 @@ export const isInAppBrowser = /FBAN|FBAV|Instagram|WhatsApp|Line\/|Snapchat|; wv
 // On iPhone only Safari can add a web app to the Home Screen.
 export const isIOSSafari = isIOS && !isInAppBrowser && !/CriOS|FxiOS|EdgiOS|OPiOS|GSA\//.test(ua);
 
+// On Android, Chrome installs Folio as a real app. Other browsers (Edge,
+// Firefox, Opera, Samsung Internet…) may only add a shortcut that opens in
+// the browser, so students are sent to Chrome.
+export const isAndroidChrome = isAndroid && !isInAppBrowser && /Chrome\//.test(ua)
+  && !/EdgA|OPR\/|SamsungBrowser|Firefox|YaBrowser|UCBrowser|DuckDuckGo|Silk/.test(ua);
+
+// The browser a student must switch to before installing, or null if this one works.
+export function installBrowserNeeded() {
+  if (isIOS && !isIOSSafari) return 'Safari';
+  if (isAndroid && !isAndroidChrome) return 'Chrome';
+  return null;
+}
+
 export { isInstalled };
 
 // Push needs the Push API; on iPhone it also needs the installed app (iOS 16.4+).

@@ -44,6 +44,15 @@
       </div>
     </div>
 
+    <!-- Students using Folio in a phone browser instead of the installed app -->
+    <div class="alert alert--warning install-reminder" id="installReminder" hidden>
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>
+      <div><b>Install Folio on your phone.</b><span id="installReminderText">You’ll get notifications, and it opens faster.</span> <a href="get-started.html">Show me how</a></div>
+      <button class="icon-btn icon-btn--sm" type="button" id="installReminderClose" aria-label="Hide this message">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+
     <div class="alert alert--error" id="pageError" role="alert" hidden>
       <div><b>Something went wrong.</b><span id="pageErrorText"></span></div>
     </div>

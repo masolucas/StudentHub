@@ -5,7 +5,7 @@ import { getSession, signInWithGoogle, goToDashboard, readAuthError } from '../s
 import { registerServiceWorker } from '../pwa.js';
 import { storage, showToast } from '../ui.js';
 import { PENDING_JOIN_KEY } from '../join-code.js';
-import { isIOS, isIOSSafari, isInAppBrowser, shouldInstallFirst } from '../device.js';
+import { isIOS, isInAppBrowser, shouldInstallFirst, installBrowserNeeded } from '../device.js';
 
 registerServiceWorker();
 
@@ -36,10 +36,17 @@ function showSignIn(authError) {
 
 // Phones that haven't installed Folio see the right install steps instead.
 function showInstallSteps() {
-  if (isInAppBrowser) $('inAppNotice').hidden = false;
-  else if (isIOS && !isIOSSafari) $('openInSafari').hidden = false;
-  else if (isIOS) $('installIOS').hidden = false;
-  else $('installAndroid').hidden = false;
+  const browser = installBrowserNeeded();
+  if (isInAppBrowser) {
+    $('inAppNotice').hidden = false;
+  } else if (browser) {
+    document.querySelectorAll('[data-browser-name]').forEach((el) => { el.textContent = browser; });
+    $('openInBrowser').hidden = false;
+  } else if (isIOS) {
+    $('installIOS').hidden = false;
+  } else {
+    $('installAndroid').hidden = false;
+  }
   $('useBrowserBtn').hidden = false;
 }
 
@@ -89,7 +96,7 @@ $('installBtn').addEventListener('click', async () => {
 // Teachers and laptop users can skip installing.
 $('useBrowserBtn').addEventListener('click', () => {
   storage.set(USE_BROWSER_KEY, '1');
-  ['installIOS', 'installAndroid', 'openInSafari', 'inAppNotice'].forEach((id) => { $(id).hidden = true; });
+  ['installIOS', 'installAndroid', 'openInBrowser', 'inAppNotice'].forEach((id) => { $(id).hidden = true; });
   showSignIn(null);
 });
 

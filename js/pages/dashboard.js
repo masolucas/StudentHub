@@ -10,6 +10,17 @@ import { PENDING_JOIN_KEY, normalizeJoinCode, isValidJoinCode, extractJoinCode, 
 import { qrSvg } from '../qr.js';
 import { startScanner } from '../qr-scanner.js';
 import { swatchesHtml, checkSwatch, checkedSwatch, nextFreeColor } from '../palette.js';
+import { shouldInstallFirst, installBrowserNeeded } from '../device.js';
+
+const INSTALL_REMINDER_KEY = 'folio.installReminderHidden';
+
+// Students signed in on a phone browser: suggest installing (in the right browser).
+function showInstallReminder() {
+  if (!shouldInstallFirst() || storage.get(INSTALL_REMINDER_KEY)) return;
+  const browser = installBrowserNeeded();
+  if (browser) $('installReminderText').textContent = `Open Folio in ${browser} to install it. You’ll get notifications, and it opens faster.`;
+  $('installReminder').hidden = false;
+}
 
 registerServiceWorker();
 
@@ -46,6 +57,7 @@ async function start() {
       return;
     }
     state.isTeacher = ['teacher', 'academic'].includes(state.profile.role);
+    if (!state.isTeacher) showInstallReminder();
     renderNavbar($('navbar'), state.profile, 'dashboard');
     $('newClassBtn').hidden = !state.isTeacher;
     $('joinBtn').hidden = state.isTeacher;
@@ -537,6 +549,10 @@ async function joinPendingCode() {
 fillCreateSelects();
 
 $('termSelect').addEventListener('change', (e) => changeTerm(e.target.value));
+$('installReminderClose').addEventListener('click', () => {
+  storage.set(INSTALL_REMINDER_KEY, '1');
+  $('installReminder').hidden = true;
+});
 
 $('newClassBtn').addEventListener('click', openCreate);
 $('emptyNewClassBtn').addEventListener('click', openCreate);
